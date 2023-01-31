@@ -2,8 +2,9 @@ import pandas as pd
 import re
 from matplotlib import pyplot as plt
 import numpy as np
-from time import sleep
-from progress.bar import Bar
+from tqdm import tqdm
+import time
+
 
 model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
               "2.0C-H4PTZ-DC30", "3.0C-H4A-D1-B", "3.0C-H4A-DC1-B",
@@ -19,8 +20,7 @@ def main(model):
     id_list = []
     ip_list = []
     rows = []
-
-    for index, row in df.iterrows():
+    for index, row in tqdm(df.iterrows(), ascii=True, unit = 'ticks'):
         if row[0] != "IslandView13":
             if row[3] == current_model:
                 ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
@@ -39,8 +39,7 @@ def main(model):
                         ' ID ': logicalID_str,
                         ' IP Address ': ip_str}
                     rows.append(row)
-                    #for i in progress.bar(range(rows)):
-                        #sleep(0.02)
+
         else:
             continue
 
@@ -51,15 +50,15 @@ def main(model):
         count = count / 3
 
     df2 = pd.DataFrame(rows)
-    df2.to_csv('C:\\data_pull_downloads\\Dataframes\\' + month_year + '_dataframe.csv', index=False, mode="a")
+    df2.to_csv('C:\\data_pull_downloads\\' + month_year + '_dataframe.csv', index=False, mode="a")
 
-    with open("C:\\data_pull_downloads\\Numbers\\" + month_year + ".csv", "a") as final:
+    with open("C:\\data_pull_downloads\\" + month_year + "_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
-    print(f'{current_model} === DONE')
+    # print(f'{current_model} === DONE')
 
 def visualize():
-    number_path = 'C:\\data_pull_downloads\\Numbers\\JAN2023.csv'
+    number_path = 'C:\\data_pull_downloads\\' + month_year + '_totals.csv'
 
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
     model_data = csv['Model']
@@ -78,7 +77,9 @@ def visualize():
     plt.savefig('C:\\data_pull_downloads\\' + month_year + ".png")
     plt.show()
 
+#for current_model in tqdm((model_list), ascii=False, colour='blue', desc='Progress: ', miniters=1):
+    #main(current_model)
 for current_model in model_list:
     main(current_model)
-visualize()
+#visualize()
 
