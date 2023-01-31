@@ -3,15 +3,15 @@ import re
 from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
-import time
-
 
 model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
               "2.0C-H4PTZ-DC30", "3.0C-H4A-D1-B", "3.0C-H4A-DC1-B",
               "3.0C-H4SL-D1", "3.0C-H4A-DO1-B", "24C-H4A-3MH-180", "2.0C-H5A-D1",
               "2.0C-H4PTZ-DP30", "2.0C-H5SL-D1", "3.0C-H5SL-D1", "4.0C-H5A-DO1",
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR"]
+
 month_year = "JAN2023"
+# month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 
 def main(model):
     data = pd.read_csv("C:\\data_pull_downloads\\SiteHealth.csv", skiprows=198)
@@ -20,7 +20,8 @@ def main(model):
     id_list = []
     ip_list = []
     rows = []
-    for index, row in tqdm(df.iterrows(), ascii=True, unit = 'ticks'):
+
+    for index, row in df.iterrows():
         if row[0] != "IslandView13":
             if row[3] == current_model:
                 ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
@@ -29,7 +30,6 @@ def main(model):
                     ip_list.append(ip_str)
                 else:
                     ip_str = "X"
-
                 logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
                 if logicalID_match:
                     logicalID_str = logicalID_match.group(1).strip()
@@ -39,7 +39,6 @@ def main(model):
                         ' ID ': logicalID_str,
                         ' IP Address ': ip_str}
                     rows.append(row)
-
         else:
             continue
 
@@ -55,11 +54,8 @@ def main(model):
     with open("C:\\data_pull_downloads\\" + month_year + "_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
-    # print(f'{current_model} === DONE')
-
 def visualize():
     number_path = 'C:\\data_pull_downloads\\' + month_year + '_totals.csv'
-
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
     model_data = csv['Model']
     count_data = csv['Count']
@@ -77,9 +73,12 @@ def visualize():
     plt.savefig('C:\\data_pull_downloads\\' + month_year + ".png")
     plt.show()
 
-#for current_model in tqdm((model_list), ascii=False, colour='blue', desc='Progress: ', miniters=1):
-    #main(current_model)
-for current_model in model_list:
+for current_model in tqdm(model_list, ascii=False, colour='blue', desc='Progress: ', miniters=1, unit='',
+                          bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
     main(current_model)
-#visualize()
+
+print("Dataframe File Created!")
+print("Totals File Created!")
+
+# visualize()
 
