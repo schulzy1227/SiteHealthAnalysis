@@ -11,8 +11,6 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
               "2.0C-H4PTZ-DP30", "2.0C-H5SL-D1", "3.0C-H5SL-D1", "4.0C-H5A-DO1",
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR"]
 
-month_year = "JAN2023"
-
 title_art = ("""\
    _____                              __ __                        
   / ___/ __  __ _____ _   __ ___   (_)/ // /____ _ ____   _____ ____ 
@@ -30,16 +28,27 @@ title_art = ("""\
                                                  /____/     
                         """)
 
-# print(title_art)
-# month_year = input("What is the month and year for this inventory? (format: JAN2023)")
+opening_msg = """\nThis program is going to open up the CSV file that YOU downloaded and added to the 'C:/data_pull_downloads' folder. 
+After the program is finished, you will have four(4) new files being: 
+1)A dataframe used for further analyses.
+2)A list of camera models and their total quantities.
+3)A file with the amount of devices using baluns and a list of their IP Address'.
+4)Lastly, a file for a bar graph will be generated.\n\n"""
 
+print(title_art)
+time.sleep(2.0)
+print(opening_msg)
+time.sleep(4.0)
+month_year = input("What is the month and year for this inventory? (format: JAN2023)")
+time.sleep(1.5)
+print("STARTING\n")
+time.sleep(2.0)
 def siphon(model):
     data = pd.read_csv("C:\\data_pull_downloads\\SiteHealth.csv", skiprows=198)
     df = pd.DataFrame(data)
 
     id_list = []
     ip_list = []
-    balun_list = []
     rows = []
 
     for index, row in df.iterrows():
@@ -49,9 +58,6 @@ def siphon(model):
                 if ip_match:
                     ip_str = ip_match.group(1).strip()
                     ip_list.append(ip_str)
-                    octets = ip_str.split('.')
-                    if int(octets[3]) < 200:
-                        balun_list.append(ip_str)
                 else:
                     ip_str = "X"
                 logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
@@ -79,6 +85,32 @@ def siphon(model):
         final.writelines(f"{current_model}: {count}\n")
 
 
+def find_baluns():
+    data = pd.read_csv("C:\\data_pull_downloads\\SiteHealth.csv", skiprows=198)
+    df = pd.DataFrame(data)
+    balun_list = []
+    final_balun_list = []
+    for index, row in df.iterrows():
+        if row[0] != "IslandView13" and row[3] != 'ENC-4P-H264':
+            ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
+            if ip_match:
+                ip_str = ip_match.group(1).strip()
+                octets = ip_str.split('.')
+                if int(octets[3]) < 200:
+                    balun_list.append(ip_str)
+            else:
+                continue
+
+    for item in balun_list:
+        if item not in final_balun_list:
+            final_balun_list.append(item)
+
+    with open("C:\\data_pull_downloads\\" + month_year + "_baluns.csv", "a") as baluns:
+        baluns.write(f"There are {len(final_balun_list)} devices on baluns.\n\n")
+        for balun in final_balun_list:
+            baluns.writelines(f"{balun}\n")
+
+
 def visualize():
     number_path = 'C:\\data_pull_downloads\\' + month_year + '_totals.csv'
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
@@ -99,16 +131,21 @@ def visualize():
     plt.show()
 
 
-for current_model in tqdm(model_list, ascii=False, colour='blue', desc='Progress: ', miniters=1, unit='',
+for current_model in tqdm(model_list, ascii=False, colour='blue', desc='Scanning: ', miniters=1, unit='',
                           bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
     siphon(current_model)
+
+find_baluns()
 
 print("Dataframe File Created!")
 time.sleep(1.0)
 print("Totals File Created!")
 time.sleep(1.0)
-print("\nLOADING GRAPH...")
+print("Baluns File Created!")
 time.sleep(1.0)
-print("\nCLOSING WINDOW...")
+print("\nLOADING GRAPH...")
+time.sleep(2.5)
+print("This window will close after you close the graph.")
+visualize()
+
 time.sleep(3.0)
-# visualize()
