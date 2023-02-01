@@ -3,6 +3,7 @@ import re
 from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
+import time
 
 model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
               "2.0C-H4PTZ-DC30", "3.0C-H4A-D1-B", "3.0C-H4A-DC1-B",
@@ -11,6 +12,25 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR"]
 
 month_year = "JAN2023"
+
+print("""\
+   _____                              __ __                        
+  / ___/ __  __ _____ _   __ ___   (_)/ // /____ _ ____   _____ ____ 
+  \__ \ / / / // ___/| | / // _ \ / // // // __ `// __ \ / ___//__ )
+ ___/ // /_/ // /    | |/ //  __// // // // /_/ // / / // /__ /  __/
+/____/_\__,_//_/     |___/ \___//_//_//_/ \__,_//_/ /_/ \___/ \___/ 
+   / __ \ (_)____ _ (_)/ /_ ____ _ / /                              
+  / / / // // __ `// // __// __ `// /                               
+ / /_/ // // /_/ // // /_ / /_/ // /                                
+/_____//_/ \__, //_/ \__/ \__,_//_/__                               
+   /  _/__/____/  __ ___   ____   / /_ ____   _____ __  __          
+   / / / __ \| | / // _ \ / __ \ / __// __ \ / ___// / / /          
+ _/ / / / / /| |/ //  __// / / // /_ / /_/ // /   / /_/ /           
+/___//_/ /_/ |___/ \___//_/ /_/ \__/ \____//_/    \__, /            
+                                                 /____/     
+                        """)
+
+
 # month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 
 def main(model):
@@ -54,6 +74,7 @@ def main(model):
     with open("C:\\data_pull_downloads\\" + month_year + "_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
+
 def visualize():
     number_path = 'C:\\data_pull_downloads\\' + month_year + '_totals.csv'
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
@@ -73,12 +94,17 @@ def visualize():
     plt.savefig('C:\\data_pull_downloads\\' + month_year + ".png")
     plt.show()
 
+
 for current_model in tqdm(model_list, ascii=False, colour='blue', desc='Progress: ', miniters=1, unit='',
                           bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
     main(current_model)
 
 print("Dataframe File Created!")
+time.sleep(1.0)
 print("Totals File Created!")
-
+time.sleep(1.0)
+print("\nLOADING GRAPH...")
+time.sleep(1.0)
+print("\nCLOSING WINDOW...")
+time.sleep(3.0)
 # visualize()
-
