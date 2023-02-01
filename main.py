@@ -4,6 +4,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
 import time
+import os
+
+parent_directory = "C:\\data_pull_downloads\\"
 
 model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
               "2.0C-H4PTZ-DC30", "3.0C-H4A-D1-B", "3.0C-H4A-DC1-B",
@@ -36,24 +39,16 @@ logo = """%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 &&&&&@@&&&&&&&%&&&@,,(((((((,#(##################(,,@@@&&%%%@@@@@@@@&@
 @@@@@&&@%&&&&&&@&&&&&&&%,,/(((,/###(########/,,@@@&%@@@@@@&&%@@@@@@@@@
 &&&&@&&&&&@&&&@&&&&&&&@&&@@&&@&%%%&&@@@@@@@@@@@@@@@@@@@@&&&%%@@@@@@@@@"""
-title_art = ("""\
-   _____                              __ __                        
-  / ___/ __  __ _____ _   __ ___   (_)/ // /____ _ ____   _____ ____ 
-  \__ \ / / / // ___/| | / // _ \ / // // // __ `// __ \ / ___//__ )
- ___/ // /_/ // /    | |/ //  __// // // // /_/ // / / // /__ /  __/
-/____/_\__,_//_/     |___/ \___//_//_//_/ \__,_//_/ /_/ \___/ \___/ 
-   / __ \ (_)____ _ (_)/ /_ ____ _ / /                              
-  / / / // // __ `// // __// __ `// /                               
- / /_/ // // /_/ // // /_ / /_/ // /                                
-/_____//_/ \__, //_/ \__/ \__,_//_/__                               
-   /  _/__/____/  __ ___   ____   / /_ ____   _____ __  __          
-   / / / __ \| | / // _ \ / __ \ / __// __ \ / ___// / / /          
- _/ / / / / /| |/ //  __// / / // /_ / /_/ // /   / /_/ /           
-/___//_/ /_/ |___/ \___//_/ /_/ \__/ \____//_/    \__, /            
-                                                 /____/     
-                        """)
+title_art = ("""
+   _____                       _ ____                    
+  / ___/__  ________   _____  (_) / /___ _____  ________ 
+  \__ \/ / / / ___/ | / / _ \/ / / / __ `/ __ \/ ___/ _ \.
+ ___/ / /_/ / /   | |/ /  __/ / / / /_/ / / / / /__/  __/
+/____/\__,_/_/    |___/\___/_/_/_/\__,_/_/ /_/\___/\___/ 
+                                                         
+""")
 opening_msg = """\nThis program is going to open up the CSV file that YOU downloaded and added to the 'C:/data_pull_downloads' folder. 
-After the program is finished, you will have four(4) new files being: 
+After the program is finished, you will have five(5) new files being: 
 1)A dataframe used for further analyses.
 2)A list of camera models and their total quantities.
 3)A file with the amount of devices using baluns and a list of their IP Address'.
@@ -69,24 +64,37 @@ month_year = input("What is the month and year for this inventory? (format: JAN2
 time.sleep(1.5)
 print("STARTING\n")
 time.sleep(2.0)
-def siphon(model):
-    data = pd.read_csv("C:\\data_pull_downloads\\SiteHealth.csv", skiprows=198)
+path = os.path.join(parent_directory, month_year + '\\')
+os.mkdir(path)
+def siphon(current_model):
+    data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
 
+    encoders = []
+    final_encoders = []
     id_list = []
     ip_list = []
     rows = []
 
     for index, row in df.iterrows():
+        ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
+        logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
         if row[0] != "IslandView13":
+            if row[3] == 'ENC-4P-H264':
+                if ip_match:
+                    ip_str = ip_match.group(1).strip()
+                    encoders.append(ip_str)
+                else:
+                    ip_str = "X"
+            for item in encoders:
+                if item not in final_encoders:
+                    final_encoders.append(item)
             if row[3] == current_model:
-                ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
                 if ip_match:
                     ip_str = ip_match.group(1).strip()
                     ip_list.append(ip_str)
                 else:
                     ip_str = "X"
-                logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
                 if logicalID_match:
                     logicalID_str = logicalID_match.group(1).strip()
                     id_list.append(logicalID_str)
@@ -105,21 +113,20 @@ def siphon(model):
         count = count / 3
 
     df2 = pd.DataFrame(rows)
-    df2.to_csv('C:\\data_pull_downloads\\' + month_year + '_dataframe.csv', index=False, mode="a")
+    df2.to_csv(path + 'dataframe.csv', index=False, mode="a")
 
-    with open("C:\\data_pull_downloads\\" + month_year + "_totals.csv", "a") as final:
+    with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
-
+        #final.writelines(f'There are {len(final_encoders)} encoders.')
 
 def find_baluns():
-    data = pd.read_csv("C:\\data_pull_downloads\\SiteHealth.csv", skiprows=198)
+    global total_no_baluns, total_baluns
+    data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
     balun_list = []
     no_balun_list = []
-    final_no_balun = []
-    final_balun_list = []
-    total_no_baluns = len(final_no_balun)
-    total_baluns = len(final_balun_list)
+    final_baluns_list = []
+    final_no_baluns = []
 
     for index, row in df.iterrows():
         if row[0] != "IslandView13" and row[3] != 'ENC-4P-H264':
@@ -135,25 +142,35 @@ def find_baluns():
                 continue
 
     for item in balun_list:
-        if item not in final_balun_list:
-            final_balun_list.append(item)
+        if item not in final_baluns_list:
+            final_baluns_list.append(item)
+            total_baluns = int(len(final_baluns_list))
 
     for item in no_balun_list:
-        if item not in final_no_balun:
-            final_no_balun.append(item)
+        if item not in final_no_baluns:
+            final_no_baluns.append(item)
+            total_no_baluns = int(len(no_balun_list))
 
-    with open("C:\\data_pull_downloads\\" + month_year + "_baluns.csv", "a") as baluns:
+    with open(path + "baluns.csv", "a") as baluns:
         baluns.write(f"There are {total_baluns} devices on baluns.\n\n")
-        for balun in final_balun_list:
+        for balun in final_baluns_list:
             baluns.writelines(f"{balun}\n")
 
-    with open("C:\\data_pull_downloads\\" + month_year + "_no_baluns.csv", "a") as no_baluns:
+    with open(path + "no_baluns.csv", "a") as no_baluns:
         no_baluns.write(f"There are {total_no_baluns} devices not on baluns.\n\n")
-        for item in final_no_balun:
+        for item in final_no_baluns:
             no_baluns.writelines(f"{item}\n")
 
+    balun_data = total_baluns, total_no_baluns
+
+    plt.figure(figsize=(5, 5))
+    plt.title('Cameras With/Without Baluns')
+    plt.pie(balun_data, autopct='%.1f%%')
+    plt.legend(['Baluns', 'No Baluns'], loc='upper right')
+    plt.show()
+
 def visualize():
-    number_path = 'C:\\data_pull_downloads\\' + month_year + '_totals.csv'
+    number_path = path + 'device_totals.csv'
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
     model_data = csv['Model']
     count_data = csv['Count']
@@ -168,7 +185,7 @@ def visualize():
     plt.ylabel('Number of Devices')
     plt.title("Number of Devices by Model Number")
     plt.subplots_adjust(bottom=.25)
-    plt.savefig('C:\\data_pull_downloads\\' + month_year + ".png")
+    plt.savefig(path + ".png")
     plt.show()
 
 
