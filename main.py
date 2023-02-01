@@ -10,7 +10,32 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
               "3.0C-H4SL-D1", "3.0C-H4A-DO1-B", "24C-H4A-3MH-180", "2.0C-H5A-D1",
               "2.0C-H4PTZ-DP30", "2.0C-H5SL-D1", "3.0C-H5SL-D1", "4.0C-H5A-DO1",
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR"]
-
+logo = """%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@&&&@@@@@@@@@*,,,,,,,,,,,*@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@&&&&@@,,################(,%%%%%,,@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@,((######################,%%%%%%%(,@@@@@@@@@@@@@@@@@
+@@@@@%@@@@@&@@@,############################,%%%%%%%%%%,@@@@@@@@@@@@@@
+@@&%&@@@@@@@/*###(#(((###((##################,%%%%%%%%%%%*/@@@@@@@@@@@
+@@@@&&@@@@(,/#%%%%%%%%%%%%%##,,,##############,%%%%%%%%%%%%*#@@@@@@@@@
+@@@&@@@@&,#%%%%%%%%%%%%%%%%%%%#%%,,%,,#########,%%%%%%%%%%%%%,@@@@@@@@
+@@@@@@@@,#%%%%%%#%%%%%%%%%%%*,@@@@&@@@@@@,*####/#%%%%%%%%%%%%%,@@@@@@@
+@@@@@@@,%##%%%%%%%%%%%%%*,@@@@@@@@@@@@@@%@@@@,*#,%%%%%%%%%%%%((,@@@@@@
+@@@@@@,%%%%%%%%%%%%%%,,@@@@@@@@@@@&&@@@@@@@@@@@@,%%%%%%%%%%%%,#(,@@@@@
+@@@@@@/%%%####%%%%,(#((@@@@@@&**@@@@@@@&/*#@@&@&/#%%%%%%%%%(*(((/@@@@@
+@@@@&,########%**((((/@@@@@@@@@&**%@@@**@@@@@@@@&/#%%%%%%%,((((((,@@@@
+@@@&&,#######,(((((((*@@@@@@@&@@@@**@*/@@@@@@@@@@*#%%%%#,((((((((,@@@@
+@&&&&*#####*/(((((((((&&&@&&&@@@@@@**/@@@@@@@@@@%(###/,((((((((((*@@@@
+&&&%&%,###,(((((((((((*@@@@@@&@@@@@%*&@@@@@@@@&&*##,((((((((((((,@@@@@
+%&&%%%,##,((((((((((((,/@@@@&&@@@@@@@@@@@@@@&@@/,(((((((((((((((,@@@@@
+%%%%&&&,*(((((((((((((,##(,&@@@@@@@@@@@@@@&%,((((((((((((((((((,@@@@@@
+&&@%&&&&,((((((((((((((,######,*@@@@@@@*,(((((((((((((((((((((,&@@@@@@
+&@&&&@@&&//((((((((((((*#(#########,,(((((((((((((((((((((((*(@@@@@@@@
+&%&@&%@@&@@,((((((((((((,################(,,,/((((((((((*,*,@&@@@@@@@@
+&&&&&@&&@@&@@,(((((((((((,##(######((###################(,@@%@@@@@@@@@
+&%@@@@&@%@&@&@&&,(((((((((,(#(####(((#######((########,@@&&@@@@@%@@@@@
+&&&&&@@&&&&&&&%&&&@,,(((((((,#(##################(,,@@@&&%%%@@@@@@@@&@
+@@@@@&&@%&&&&&&@&&&&&&&%,,/(((,/###(########/,,@@@&%@@@@@@&&%@@@@@@@@@
+&&&&@&&&&&@&&&@&&&&&&&@&&@@&&@&%%%&&@@@@@@@@@@@@@@@@@@@@&&&%%@@@@@@@@@"""
 title_art = ("""\
    _____                              __ __                        
   / ___/ __  __ _____ _   __ ___   (_)/ // /____ _ ____   _____ ____ 
@@ -27,7 +52,6 @@ title_art = ("""\
 /___//_/ /_/ |___/ \___//_/ /_/ \__/ \____//_/    \__, /            
                                                  /____/     
                         """)
-
 opening_msg = """\nThis program is going to open up the CSV file that YOU downloaded and added to the 'C:/data_pull_downloads' folder. 
 After the program is finished, you will have four(4) new files being: 
 1)A dataframe used for further analyses.
@@ -35,10 +59,12 @@ After the program is finished, you will have four(4) new files being:
 3)A file with the amount of devices using baluns and a list of their IP Address'.
 4)Lastly, a file for a bar graph will be generated.\n\n"""
 
+print(logo)
+time.sleep(2.0)
 print(title_art)
 time.sleep(2.0)
 print(opening_msg)
-time.sleep(4.0)
+time.sleep(2.5)
 month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 time.sleep(1.5)
 print("STARTING\n")
@@ -89,7 +115,12 @@ def find_baluns():
     data = pd.read_csv("C:\\data_pull_downloads\\SiteHealth.csv", skiprows=198)
     df = pd.DataFrame(data)
     balun_list = []
+    no_balun_list = []
+    final_no_balun = []
     final_balun_list = []
+    total_no_baluns = len(final_no_balun)
+    total_baluns = len(final_balun_list)
+
     for index, row in df.iterrows():
         if row[0] != "IslandView13" and row[3] != 'ENC-4P-H264':
             ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
@@ -98,6 +129,8 @@ def find_baluns():
                 octets = ip_str.split('.')
                 if int(octets[3]) < 200:
                     balun_list.append(ip_str)
+                else:
+                    no_balun_list.append(ip_str)
             else:
                 continue
 
@@ -105,11 +138,19 @@ def find_baluns():
         if item not in final_balun_list:
             final_balun_list.append(item)
 
+    for item in no_balun_list:
+        if item not in final_no_balun:
+            final_no_balun.append(item)
+
     with open("C:\\data_pull_downloads\\" + month_year + "_baluns.csv", "a") as baluns:
-        baluns.write(f"There are {len(final_balun_list)} devices on baluns.\n\n")
+        baluns.write(f"There are {total_baluns} devices on baluns.\n\n")
         for balun in final_balun_list:
             baluns.writelines(f"{balun}\n")
 
+    with open("C:\\data_pull_downloads\\" + month_year + "_no_baluns.csv", "a") as no_baluns:
+        no_baluns.write(f"There are {total_no_baluns} devices not on baluns.\n\n")
+        for item in final_no_balun:
+            no_baluns.writelines(f"{item}\n")
 
 def visualize():
     number_path = 'C:\\data_pull_downloads\\' + month_year + '_totals.csv'
