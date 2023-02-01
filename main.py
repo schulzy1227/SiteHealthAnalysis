@@ -13,7 +13,7 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
 
 month_year = "JAN2023"
 
-print("""\
+title_art = ("""\
    _____                              __ __                        
   / ___/ __  __ _____ _   __ ___   (_)/ // /____ _ ____   _____ ____ 
   \__ \ / / / // ___/| | / // _ \ / // // // __ `// __ \ / ___//__ )
@@ -30,15 +30,16 @@ print("""\
                                                  /____/     
                         """)
 
-
+# print(title_art)
 # month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 
-def main(model):
+def siphon(model):
     data = pd.read_csv("C:\\data_pull_downloads\\SiteHealth.csv", skiprows=198)
     df = pd.DataFrame(data)
 
     id_list = []
     ip_list = []
+    balun_list = []
     rows = []
 
     for index, row in df.iterrows():
@@ -48,6 +49,9 @@ def main(model):
                 if ip_match:
                     ip_str = ip_match.group(1).strip()
                     ip_list.append(ip_str)
+                    octets = ip_str.split('.')
+                    if int(octets[3]) < 200:
+                        balun_list.append(ip_str)
                 else:
                     ip_str = "X"
                 logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
@@ -97,7 +101,7 @@ def visualize():
 
 for current_model in tqdm(model_list, ascii=False, colour='blue', desc='Progress: ', miniters=1, unit='',
                           bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
-    main(current_model)
+    siphon(current_model)
 
 print("Dataframe File Created!")
 time.sleep(1.0)
