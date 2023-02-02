@@ -5,14 +5,20 @@ import numpy as np
 from tqdm import tqdm
 import time
 import os
+import shutil
 
 parent_directory = "C:\\data_pull_downloads\\"
 
 model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
               "2.0C-H4PTZ-DC30", "3.0C-H4A-D1-B", "3.0C-H4A-DC1-B",
               "3.0C-H4SL-D1", "3.0C-H4A-DO1-B", "24C-H4A-3MH-180", "2.0C-H5A-D1",
-              "2.0C-H4PTZ-DP30", "2.0C-H5SL-D1", "3.0C-H5SL-D1", "4.0C-H5A-DO1",
-              "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR"]
+              "2.0C-H4PTZ-DP30", "2.0C-H5SL-D1", "3.0C-H5SL-D1", "4.0C-H5A-DO1", "3.0C-H4A-DC1", "1.3C-H5SL-D1",
+              "12.0-H4F-DO1-IR", "2.0C-H4A-D2-B",
+              "4.0C-H5A-D1", "2.0C-H4A-D1", "2.0C-H4A-D2", "9W-H3-3MH-DO1-B", "2.0C-H5A-PTZ-DP36", "2.0C-H5A-DC1",
+              "15C-H4A-3MH-180",
+              "4.0C-H5A-DC1", "5.0C-H6M-D1-IR", "5.0L-H4A-D1", "2.0C-H4A-DC1-B", "IMP121",
+              "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR",
+              "ENC-4P-H264"]
 logo = """%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@&&&@@@@@@@@@*,,,,,,,,,,,*@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@&&&&@@,,################(,%%%%%,,@@@@@@@@@@@@@@@@@@@@@
@@ -54,24 +60,28 @@ After the program is finished, you will have five(5) new files being:
 3)A file with the amount of devices using baluns and a list of their IP Address'.
 4)Lastly, a file for a bar graph will be generated.\n\n"""
 
-print(logo)
-time.sleep(2.0)
+# print(logo)
+# time.sleep(1.0)
 print(title_art)
 time.sleep(2.0)
 print(opening_msg)
-time.sleep(2.5)
+time.sleep(1.0)
 month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 time.sleep(1.5)
-print("STARTING\n")
-time.sleep(2.0)
+
+# logic to make new folder for all generated files
 path = os.path.join(parent_directory, month_year + '\\')
+# if path already exists, delete and make new
+if os.path.exists(path):
+    shutil.rmtree(path)
 os.mkdir(path)
+
+# SIPHON is the main filtering function
 def siphon(current_model):
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
 
     encoders = []
-    final_encoders = []
     id_list = []
     ip_list = []
     rows = []
@@ -80,15 +90,19 @@ def siphon(current_model):
         ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
         logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
         if row[0] != "IslandView13":
+            # logic for finding missing model numbers
+            if row[3] not in model_list:
+                print(f"{row[3]} is not in your list of models. Please consider adding it before running the program again.")
+            # logic for finding AMOUNT of encoders
             if row[3] == 'ENC-4P-H264':
                 if ip_match:
                     ip_str = ip_match.group(1).strip()
-                    encoders.append(ip_str)
+                    if ip_str not in encoders:
+                        encoders.append(ip_str)
                 else:
-                    ip_str = "X"
-            for item in encoders:
-                if item not in final_encoders:
-                    final_encoders.append(item)
+                    continue
+
+            # logic for matching models and stripping their ID and IP
             if row[3] == current_model:
                 if ip_match:
                     ip_str = ip_match.group(1).strip()
@@ -106,18 +120,23 @@ def siphon(current_model):
         else:
             continue
 
+    # logic to find amounts of cameras for devices with more than one camera. (Dual heads and 180s)
     count = len(set(id_list))
     if current_model == "6.0C-H5DH-DO1-IR":
         count = count / 2
     elif current_model == "24C-H4A-3MH-180":
         count = count / 3
+    elif current_model == "ENC-4P-H264":
+        current_model = "Analog Cameras"
 
+    # logic to make dataframe out of ROWS and create new file
     df2 = pd.DataFrame(rows)
     df2.to_csv(path + 'dataframe.csv', index=False, mode="a")
 
+    # logic to make file showing all models and their totals
     with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
-        #final.writelines(f'There are {len(final_encoders)} encoders.')
+
 
 def find_baluns():
     global total_no_baluns, total_baluns
@@ -169,6 +188,7 @@ def find_baluns():
     plt.legend(['Baluns', 'No Baluns'], loc='upper right')
     plt.show()
 
+
 def visualize():
     number_path = path + 'device_totals.csv'
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
@@ -189,11 +209,13 @@ def visualize():
     plt.show()
 
 
-for current_model in tqdm(model_list, ascii=False, colour='blue', desc='Scanning: ', miniters=1, unit='',
-                          bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
-    siphon(current_model)
+def main():
+    for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
+                              bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
+        siphon(current_model)
 
-find_baluns()
+main()
+# find_baluns()
 
 print("Dataframe File Created!")
 time.sleep(1.0)
@@ -204,6 +226,6 @@ time.sleep(1.0)
 print("\nLOADING GRAPH...")
 time.sleep(2.5)
 print("This window will close after you close the graph.")
-visualize()
+# visualize()
 
 time.sleep(3.0)
