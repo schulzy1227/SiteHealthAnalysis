@@ -59,15 +59,19 @@ After the program is finished, you will have five(5) new files being:
 2)A list of camera models and their total quantities.
 3)A file with the amount of devices using baluns and a list of their IP Address'.
 4)Lastly, a file for a bar graph will be generated.\n\n"""
+digital_counts = []
+total_digital = sum(digital_counts)
+counts = []
+analog_count = []
+
 
 # print(logo)
+# print(title_art)
+# time.sleep(2.0)
+# print(opening_msg)
 # time.sleep(1.0)
-print(title_art)
-time.sleep(2.0)
-print(opening_msg)
-time.sleep(1.0)
-month_year = input("What is the month and year for this inventory? (format: JAN2023)")
-time.sleep(1.5)
+# month_year = input("What is the month and year for this inventory? (format: JAN2023)")
+month_year = 'Jan2023'
 
 # logic to make new folder for all generated files
 path = os.path.join(parent_directory, month_year + '\\')
@@ -78,6 +82,7 @@ os.mkdir(path)
 
 # SIPHON is the main filtering function
 def siphon(current_model):
+
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
 
@@ -87,8 +92,10 @@ def siphon(current_model):
     rows = []
 
     for index, row in df.iterrows():
+        # Regex
         ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
         logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
+        # Skip rows that start with Island View 13
         if row[0] != "IslandView13":
             # logic for finding missing model numbers
             if row[3] not in model_list:
@@ -120,14 +127,27 @@ def siphon(current_model):
         else:
             continue
 
-    # logic to find amounts of cameras for devices with more than one camera. (Dual heads and 180s)
+    # find amount of ID's in list
     count = len(set(id_list))
-    if current_model == "6.0C-H5DH-DO1-IR":
-        count = count / 2
-    elif current_model == "24C-H4A-3MH-180":
-        count = count / 3
+
+    # find totals for devices with multiple heads
+    if current_model == "6.0C-H5DH-DO1-IR": # 2 cams per device
+        digital_counts.append(count)
+        count = count/2
+    elif current_model == "24C-H4A-3MH-180": # 3 cams/device
+        digital_counts.append(count)
+        count = count/3
+    elif current_model == "15C-H4A-3MH-180": # 3 cams/device
+        digital_counts.append(count)
+        count = count/3
+    # replace ENC with analog cameras
     elif current_model == "ENC-4P-H264":
         current_model = "Analog Cameras"
+        analog_count.append(count)
+
+    if current_model != "Analog Cameras":
+        digital_counts.append(count)
+    counts.append(count)
 
     # logic to make dataframe out of ROWS and create new file
     df2 = pd.DataFrame(rows)
@@ -137,8 +157,7 @@ def siphon(current_model):
     with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
-
-def find_baluns():
+def baluns_piechart():
     global total_no_baluns, total_baluns
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
@@ -186,46 +205,67 @@ def find_baluns():
     plt.title('Cameras With/Without Baluns')
     plt.pie(balun_data, autopct='%.1f%%')
     plt.legend(['Baluns', 'No Baluns'], loc='upper right')
+    plt.savefig(path + "baluns.png")
     plt.show()
 
 
-def visualize():
+def models_bargraph():
     number_path = path + 'device_totals.csv'
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
     model_data = csv['Model']
     count_data = csv['Count']
     colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#8c564b", "#191970", "#F0F8FF", "#00FFFF", "#8A2BE2",
               "#5F9EA0",
-              "#7FFF00", "#DC143C", "#006400", "#008B8B", "#B8860B", "#556B2F", "#BDB76B", "#ADFF2F", "#CD5C5C"]
-    fig = plt.figure(figsize=(5, 7))
+              "#7FFF00", "#DC143C", "#006400", "#008B8B", "#B8860B", "#556B2F", "#BDB76B", "#ADFF2F", "#CD5C5C",
+              "#E3CF57", "#8B2323",
+              "#76EE00", "#CD2626", "#8B5742", "#FF34B3", "#FF8000", "#8B0000", "#71C671"]
+    fig = plt.figure(figsize=(7, 9))
     plt.bar(model_data, count_data, color=colors, width=1.0)
     plt.xticks(fontsize=7, rotation=90)
-    plt.yticks(np.arange(min(count_data) - 1, max(count_data) + 10, 10.0), fontsize=8)
+    plt.yticks(np.arange(min(count_data) - 1, max(count_data) + 10, 20.0), fontsize=8)
     plt.xlabel('Camera Model')
     plt.ylabel('Number of Devices')
     plt.title("Number of Devices by Model Number")
     plt.subplots_adjust(bottom=.25)
-    plt.savefig(path + ".png")
+    plt.savefig(path + "models_barplot.png")
     plt.show()
 
-
+# def find_gaming_cams():
+    # future function using location column in main dataframe to decide whether a camera is gaming regulated
+def compare_types():
+    print(total_digital,"digital")
+    print(total_analog,"analog")
 def main():
+    print("Scanning Site Health Report..")
     for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
                               bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
         siphon(current_model)
-
+# run main function
 main()
-# find_baluns()
+# make variables out of collected data
+total_analog = int((sum(analog_count)))
+total_digital = int((sum(digital_counts)))
+total_devices = int(total_analog + total_digital)
+# print data to screen
+print(f"There are {total_analog} analogs and {total_digital} digitals")
+print(f"There are {total_devices} total cameras and {sum(counts)} total devices")
+compare_types()
+# write total data to end of file
+# with open(path + "device_totals.csv", "a") as final:
+#     final.writelines(f"\nThere are {total_devices} total cameras and {sum(counts)} total devices")
 
-print("Dataframe File Created!")
-time.sleep(1.0)
-print("Totals File Created!")
-time.sleep(1.0)
-print("Baluns File Created!")
-time.sleep(1.0)
-print("\nLOADING GRAPH...")
-time.sleep(2.5)
-print("This window will close after you close the graph.")
-# visualize()
 
-time.sleep(3.0)
+# print("Dataframe File Created!")
+# time.sleep(0.5)
+# print("Totals File Created!")
+# time.sleep(0.5)
+# print("Baluns File Created!")
+# time.sleep(1.0)
+# print("\nLOADING Baluns Pie Chart...")
+# time.sleep(2.5)
+# baluns_piechart()
+# print("This window will close after you close the graph.")
+# print("LOADING Camera Model Bar Graph...")
+# models_bargraph()
+
+# time.sleep(3.0)
