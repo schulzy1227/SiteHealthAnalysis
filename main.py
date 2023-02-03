@@ -65,13 +65,13 @@ counts = []
 analog_count = []
 
 
-# print(logo)
-# print(title_art)
-# time.sleep(2.0)
-# print(opening_msg)
-# time.sleep(1.0)
-# month_year = input("What is the month and year for this inventory? (format: JAN2023)")
-month_year = 'Jan2023'
+print(logo)
+print(title_art)
+time.sleep(2.0)
+print(opening_msg)
+time.sleep(1.0)
+month_year = input("What is the month and year for this inventory? (format: JAN2023)")
+# month_year = 'Jan2023'
 
 # logic to make new folder for all generated files
 path = os.path.join(parent_directory, month_year + '\\')
@@ -232,9 +232,16 @@ def models_bargraph():
 
 # def find_gaming_cams():
     # future function using location column in main dataframe to decide whether a camera is gaming regulated
-def compare_types():
-    print(total_digital,"digital")
-    print(total_analog,"analog")
+def types_piechart():
+    type_data = total_digital, total_analog
+    plt.figure(figsize=(5, 5))
+    plt.title('Digital VS Analog')
+    plt.pie(type_data, autopct='%.1f%%')
+    plt.legend(['Digital Cameras', 'Analog Cameras'], loc='upper right')
+    plt.savefig(path + "types_piechart.png")
+    plt.show()
+
+
 def main():
     print("Scanning Site Health Report..")
     for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
@@ -249,23 +256,19 @@ total_devices = int(total_analog + total_digital)
 # print data to screen
 print(f"There are {total_analog} analogs and {total_digital} digitals")
 print(f"There are {total_devices} total cameras and {sum(counts)} total devices")
-compare_types()
-# write total data to end of file
-# with open(path + "device_totals.csv", "a") as final:
-#     final.writelines(f"\nThere are {total_devices} total cameras and {sum(counts)} total devices")
 
+types_piechart()
 
-# print("Dataframe File Created!")
-# time.sleep(0.5)
-# print("Totals File Created!")
-# time.sleep(0.5)
-# print("Baluns File Created!")
-# time.sleep(1.0)
-# print("\nLOADING Baluns Pie Chart...")
-# time.sleep(2.5)
-# baluns_piechart()
-# print("This window will close after you close the graph.")
-# print("LOADING Camera Model Bar Graph...")
-# models_bargraph()
+print("Dataframe File Created!")
+time.sleep(0.5)
+print("Totals File Created!")
+time.sleep(0.5)
+print("Baluns File Created!")
+time.sleep(1.0)
+print("\nLOADING Baluns Pie Chart...")
+time.sleep(2.5)
+baluns_piechart()
+print("LOADING Camera Model Bar Graph...")
+models_bargraph()
 
 # time.sleep(3.0)
