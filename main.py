@@ -60,18 +60,22 @@ After the program is finished, you will have five(5) new files being:
 3)A file with the amount of devices using baluns and a list of their IP Address'.
 4)Lastly, a file for a bar graph will be generated.\n\n"""
 digital_counts = []
-total_digital = sum(digital_counts)
 counts = []
 analog_count = []
+gaming_serial = []
+boh_serial = []
+gaming_cams = []
+boh_cams = []
 
 
-print(logo)
-print(title_art)
-time.sleep(2.0)
-print(opening_msg)
-time.sleep(1.0)
-month_year = input("What is the month and year for this inventory? (format: JAN2023)")
-# month_year = 'Jan2023'
+
+# print(logo)
+# print(title_art)
+# time.sleep(2.0)
+# print(opening_msg)
+# time.sleep(1.0)
+# month_year = input("What is the month and year for this inventory? (format: JAN2023)")
+month_year = 'Jan2023'
 
 # logic to make new folder for all generated files
 path = os.path.join(parent_directory, month_year + '\\')
@@ -230,8 +234,7 @@ def models_bargraph():
     plt.savefig(path + "models_barplot.png")
     plt.show()
 
-# def find_gaming_cams():
-    # future function using location column in main dataframe to decide whether a camera is gaming regulated
+
 def types_piechart():
     type_data = total_digital, total_analog
     plt.figure(figsize=(5, 5))
@@ -241,6 +244,50 @@ def types_piechart():
     plt.savefig(path + "types_piechart.png")
     plt.show()
 
+def count_gaming_cams():
+
+    data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
+    df4 = pd.DataFrame(data)
+    for index, row in df4.iterrows():
+        if row[0] == "IslandView13":
+            continue
+        id = row[5]
+        # name = row[1]
+        # serial_num = row[12]
+        model_num = row[3]
+        location = row[4]
+        # if location matches gaming check if that serial number is in gaming_cams list
+        if location != "GAMING":
+            if id not in boh_cams:
+                boh_cams.append(id)
+        elif location == "GAMING" and model_num == "ENC-4P-H264":
+            gaming_cams.append(id)
+
+        elif location == "GAMING":
+            if id not in gaming_cams:
+                gaming_cams.append(id)
+            else:
+                continue
+        else:
+            if id not in boh_cams:
+                boh_cams.append(id)
+            # if serial is in gaming_cam list, skip
+
+        # if location is not "GAMING" add serial number to non_gaming cams list
+
+    total_gaming_cams = len(set(gaming_cams))
+    total_boh = len(set(boh_cams))
+    print("Total Gaming Cameras: ", total_gaming_cams)
+    print("Total Back of House Cameras: ", total_boh)
+
+    with open(path + 'gaming_cam_list.csv', "w") as gaming_list:
+        for item in gaming_cams:
+            gaming_list.writelines(f"{item}\n")
+
+    with open(path + 'boh_cam_list.csv', 'w') as boh_list:
+        for item in boh_cams:
+            boh_list.write(f"{item}\n")
+
 
 def main():
     print("Scanning Site Health Report..")
@@ -249,26 +296,17 @@ def main():
         siphon(current_model)
 # run main function
 main()
+count_gaming_cams()
 # make variables out of collected data
 total_analog = int((sum(analog_count)))
 total_digital = int((sum(digital_counts)))
-total_devices = int(total_analog + total_digital)
-# print data to screen
+total_cameras = int(total_analog + total_digital)
+total_devices = int(sum(counts))
+
 print(f"There are {total_analog} analogs and {total_digital} digitals")
-print(f"There are {total_devices} total cameras and {sum(counts)} total devices")
+print(f"There are {total_cameras} total cameras and {total_devices} total devices")
 
-types_piechart()
-
-print("Dataframe File Created!")
-time.sleep(0.5)
-print("Totals File Created!")
-time.sleep(0.5)
-print("Baluns File Created!")
-time.sleep(1.0)
-print("\nLOADING Baluns Pie Chart...")
-time.sleep(2.5)
 baluns_piechart()
-print("LOADING Camera Model Bar Graph...")
+types_piechart()
 models_bargraph()
 
-# time.sleep(3.0)
