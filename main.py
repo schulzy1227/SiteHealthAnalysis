@@ -3,11 +3,12 @@ import re
 from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
-import time
+from datetime import datetime
 import os
 import shutil
 
 parent_directory = "C:\\data_pull_downloads\\"
+date = datetime.today().strftime('%m:%d:%Y')
 
 model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
               "2.0C-H4PTZ-DC30", "3.0C-H4A-D1-B", "3.0C-H4A-DC1-B",
@@ -66,8 +67,6 @@ gaming_serial = []
 boh_serial = []
 gaming_cams = []
 boh_cams = []
-
-
 
 # print(logo)
 # print(title_art)
@@ -251,29 +250,28 @@ def count_gaming_cams():
     for index, row in df4.iterrows():
         if row[0] == "IslandView13":
             continue
-        id = row[5]
+        log_id = str(row[5])
+        log_id = log_id.split(':')[-1].strip()
+        print(log_id)
         # name = row[1]
         # serial_num = row[12]
         model_num = row[3]
         location = row[4]
         # if location matches gaming check if that serial number is in gaming_cams list
         if location != "GAMING":
-            if id not in boh_cams:
-                boh_cams.append(id)
+            if log_id not in boh_cams:
+                boh_cams.append(log_id)
         elif location == "GAMING" and model_num == "ENC-4P-H264":
-            gaming_cams.append(id)
+            gaming_cams.append(log_id)
 
         elif location == "GAMING":
             if id not in gaming_cams:
-                gaming_cams.append(id)
+                gaming_cams.append(log_id)
             else:
                 continue
         else:
             if id not in boh_cams:
-                boh_cams.append(id)
-            # if serial is in gaming_cam list, skip
-
-        # if location is not "GAMING" add serial number to non_gaming cams list
+                boh_cams.append(log_id)
 
     total_gaming_cams = len(set(gaming_cams))
     total_boh = len(set(boh_cams))
@@ -287,6 +285,11 @@ def count_gaming_cams():
     with open(path + 'boh_cam_list.csv', 'w') as boh_list:
         for item in boh_cams:
             boh_list.write(f"{item}\n")
+
+    with open(path + "gaming_cam_totals.txt", "a") as gaming_breakdown:
+        gaming_breakdown.write(f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
+
+
 
 
 def main():
@@ -305,8 +308,8 @@ total_devices = int(sum(counts))
 
 print(f"There are {total_analog} analogs and {total_digital} digitals")
 print(f"There are {total_cameras} total cameras and {total_devices} total devices")
-
-baluns_piechart()
-types_piechart()
-models_bargraph()
+#
+# baluns_piechart()
+# types_piechart()
+# models_bargraph()
 
