@@ -252,7 +252,6 @@ def count_gaming_cams():
             continue
         log_id = str(row[5])
         log_id = log_id.split(':')[-1].strip()
-        print(log_id)
         # name = row[1]
         # serial_num = row[12]
         model_num = row[3]
@@ -289,9 +288,6 @@ def count_gaming_cams():
     with open(path + "gaming_cam_totals.txt", "a") as gaming_breakdown:
         gaming_breakdown.write(f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
 
-
-
-
 def main():
     print("Scanning Site Health Report..")
     for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
@@ -299,17 +295,17 @@ def main():
         siphon(current_model)
 # run main function
 main()
-count_gaming_cams()
+
 # make variables out of collected data
 total_analog = int((sum(analog_count)))
 total_digital = int((sum(digital_counts)))
 total_cameras = int(total_analog + total_digital)
 total_devices = int(sum(counts))
 
+count_gaming_cams()
+baluns_piechart()
+types_piechart()
+models_bargraph()
+
 print(f"There are {total_analog} analogs and {total_digital} digitals")
 print(f"There are {total_cameras} total cameras and {total_devices} total devices")
-#
-# baluns_piechart()
-# types_piechart()
-# models_bargraph()
-
