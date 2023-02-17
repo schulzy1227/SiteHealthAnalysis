@@ -20,46 +20,46 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
               "4.0C-H5A-DC1", "5.0C-H6M-D1-IR", "5.0L-H4A-D1", "2.0C-H4A-DC1-B", "IMP121",
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR",
               "ENC-4P-H264"]
-logo = """%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@&&&@@@@@@@@@*,,,,,,,,,,,*@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@&&&&@@,,################(,%%%%%,,@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@,((######################,%%%%%%%(,@@@@@@@@@@@@@@@@@
-@@@@@%@@@@@&@@@,############################,%%%%%%%%%%,@@@@@@@@@@@@@@
-@@&%&@@@@@@@/*###(#(((###((##################,%%%%%%%%%%%*/@@@@@@@@@@@
-@@@@&&@@@@(,/#%%%%%%%%%%%%%##,,,##############,%%%%%%%%%%%%*#@@@@@@@@@
-@@@&@@@@&,#%%%%%%%%%%%%%%%%%%%#%%,,%,,#########,%%%%%%%%%%%%%,@@@@@@@@
-@@@@@@@@,#%%%%%%#%%%%%%%%%%%*,@@@@&@@@@@@,*####/#%%%%%%%%%%%%%,@@@@@@@
-@@@@@@@,%##%%%%%%%%%%%%%*,@@@@@@@@@@@@@@%@@@@,*#,%%%%%%%%%%%%((,@@@@@@
-@@@@@@,%%%%%%%%%%%%%%,,@@@@@@@@@@@&&@@@@@@@@@@@@,%%%%%%%%%%%%,#(,@@@@@
-@@@@@@/%%%####%%%%,(#((@@@@@@&**@@@@@@@&/*#@@&@&/#%%%%%%%%%(*(((/@@@@@
-@@@@&,########%**((((/@@@@@@@@@&**%@@@**@@@@@@@@&/#%%%%%%%,((((((,@@@@
-@@@&&,#######,(((((((*@@@@@@@&@@@@**@*/@@@@@@@@@@*#%%%%#,((((((((,@@@@
-@&&&&*#####*/(((((((((&&&@&&&@@@@@@**/@@@@@@@@@@%(###/,((((((((((*@@@@
-&&&%&%,###,(((((((((((*@@@@@@&@@@@@%*&@@@@@@@@&&*##,((((((((((((,@@@@@
-%&&%%%,##,((((((((((((,/@@@@&&@@@@@@@@@@@@@@&@@/,(((((((((((((((,@@@@@
-%%%%&&&,*(((((((((((((,##(,&@@@@@@@@@@@@@@&%,((((((((((((((((((,@@@@@@
-&&@%&&&&,((((((((((((((,######,*@@@@@@@*,(((((((((((((((((((((,&@@@@@@
-&@&&&@@&&//((((((((((((*#(#########,,(((((((((((((((((((((((*(@@@@@@@@
-&%&@&%@@&@@,((((((((((((,################(,,,/((((((((((*,*,@&@@@@@@@@
-&&&&&@&&@@&@@,(((((((((((,##(######((###################(,@@%@@@@@@@@@
-&%@@@@&@%@&@&@&&,(((((((((,(#(####(((#######((########,@@&&@@@@@%@@@@@
-&&&&&@@&&&&&&&%&&&@,,(((((((,#(##################(,,@@@&&%%%@@@@@@@@&@
-@@@@@&&@%&&&&&&@&&&&&&&%,,/(((,/###(########/,,@@@&%@@@@@@&&%@@@@@@@@@
-&&&&@&&&&&@&&&@&&&&&&&@&&@@&&@&%%%&&@@@@@@@@@@@@@@@@@@@@&&&%%@@@@@@@@@"""
-title_art = ("""
-   _____                       _ ____                    
-  / ___/__  ________   _____  (_) / /___ _____  ________ 
-  \__ \/ / / / ___/ | / / _ \/ / / / __ `/ __ \/ ___/ _ \.
- ___/ / /_/ / /   | |/ /  __/ / / / /_/ / / / / /__/  __/
-/____/\__,_/_/    |___/\___/_/_/_/\__,_/_/ /_/\___/\___/ 
-                                                         
-""")
-opening_msg = """\nThis program is going to open up the CSV file that YOU downloaded and added to the 'C:/data_pull_downloads' folder. 
-After the program is finished, you will have five(5) new files being: 
-1)A dataframe used for further analyses.
-2)A list of camera models and their total quantities.
-3)A file with the amount of devices using baluns and a list of their IP Address'.
-4)Lastly, a file for a bar graph will be generated.\n\n"""
+# logo = """%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@&&&@@@@@@@@@*,,,,,,,,,,,*@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@&&&&@@,,################(,%%%%%,,@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@@,((######################,%%%%%%%(,@@@@@@@@@@@@@@@@@
+# @@@@@%@@@@@&@@@,############################,%%%%%%%%%%,@@@@@@@@@@@@@@
+# @@&%&@@@@@@@/*###(#(((###((##################,%%%%%%%%%%%*/@@@@@@@@@@@
+# @@@@&&@@@@(,/#%%%%%%%%%%%%%##,,,##############,%%%%%%%%%%%%*#@@@@@@@@@
+# @@@&@@@@&,#%%%%%%%%%%%%%%%%%%%#%%,,%,,#########,%%%%%%%%%%%%%,@@@@@@@@
+# @@@@@@@@,#%%%%%%#%%%%%%%%%%%*,@@@@&@@@@@@,*####/#%%%%%%%%%%%%%,@@@@@@@
+# @@@@@@@,%##%%%%%%%%%%%%%*,@@@@@@@@@@@@@@%@@@@,*#,%%%%%%%%%%%%((,@@@@@@
+# @@@@@@,%%%%%%%%%%%%%%,,@@@@@@@@@@@&&@@@@@@@@@@@@,%%%%%%%%%%%%,#(,@@@@@
+# @@@@@@/%%%####%%%%,(#((@@@@@@&**@@@@@@@&/*#@@&@&/#%%%%%%%%%(*(((/@@@@@
+# @@@@&,########%**((((/@@@@@@@@@&**%@@@**@@@@@@@@&/#%%%%%%%,((((((,@@@@
+# @@@&&,#######,(((((((*@@@@@@@&@@@@**@*/@@@@@@@@@@*#%%%%#,((((((((,@@@@
+# @&&&&*#####*/(((((((((&&&@&&&@@@@@@**/@@@@@@@@@@%(###/,((((((((((*@@@@
+# &&&%&%,###,(((((((((((*@@@@@@&@@@@@%*&@@@@@@@@&&*##,((((((((((((,@@@@@
+# %&&%%%,##,((((((((((((,/@@@@&&@@@@@@@@@@@@@@&@@/,(((((((((((((((,@@@@@
+# %%%%&&&,*(((((((((((((,##(,&@@@@@@@@@@@@@@&%,((((((((((((((((((,@@@@@@
+# &&@%&&&&,((((((((((((((,######,*@@@@@@@*,(((((((((((((((((((((,&@@@@@@
+# &@&&&@@&&//((((((((((((*#(#########,,(((((((((((((((((((((((*(@@@@@@@@
+# &%&@&%@@&@@,((((((((((((,################(,,,/((((((((((*,*,@&@@@@@@@@
+# &&&&&@&&@@&@@,(((((((((((,##(######((###################(,@@%@@@@@@@@@
+# &%@@@@&@%@&@&@&&,(((((((((,(#(####(((#######((########,@@&&@@@@@%@@@@@
+# &&&&&@@&&&&&&&%&&&@,,(((((((,#(##################(,,@@@&&%%%@@@@@@@@&@
+# @@@@@&&@%&&&&&&@&&&&&&&%,,/(((,/###(########/,,@@@&%@@@@@@&&%@@@@@@@@@
+# &&&&@&&&&&@&&&@&&&&&&&@&&@@&&@&%%%&&@@@@@@@@@@@@@@@@@@@@&&&%%@@@@@@@@@"""
+# title_art = ("""
+#    _____                       _ ____
+#   / ___/__  ________   _____  (_) / /___ _____  ________
+#   \__ \/ / / / ___/ | / / _ \/ / / / __ `/ __ \/ ___/ _ \.
+#  ___/ / /_/ / /   | |/ /  __/ / / / /_/ / / / / /__/  __/
+# /____/\__,_/_/    |___/\___/_/_/_/\__,_/_/ /_/\___/\___/
+#
+# """)
+# opening_msg = """\nThis program is going to open up the CSV file that YOU downloaded and added to the 'C:/data_pull_downloads' folder.
+# After the program is finished, you will have five(5) new files being:
+# 1)A dataframe used for further analyses.
+# 2)A list of camera models and their total quantities.
+# 3)A file with the amount of devices using baluns and a list of their IP Address'.
+# 4)Lastly, a file for a bar graph will be generated.\n\n"""
 digital_counts = []
 counts = []
 analog_count = []
@@ -67,6 +67,13 @@ gaming_serial = []
 boh_serial = []
 gaming_cams = []
 boh_cams = []
+encoders = []
+encoder_list = []
+
+balun_list = []
+no_balun_list = []
+final_baluns_list = []
+final_no_baluns = []
 
 # print(logo)
 # print(title_art)
@@ -89,31 +96,32 @@ def siphon(current_model):
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
 
-    encoders = []
     id_list = []
     ip_list = []
     rows = []
+    count = len(set(id_list))
 
     for index, row in df.iterrows():
+        server = row[0]
+        name = row[1]
+        serial_num = row[12]
+        model_num = row[3]
+        location = row[4]
         # Regex
         ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
         logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
+        # serial_num = row[12]
         # Skip rows that start with Island View 13
-        if row[0] != "IslandView13":
+        if server != "IslandView13":
             # logic for finding missing model numbers
-            if row[3] not in model_list:
-                print(f"{row[3]} is not in your list of models. Please consider adding it before running the program again.")
-            # logic for finding AMOUNT of encoders
-            if row[3] == 'ENC-4P-H264':
-                if ip_match:
-                    ip_str = ip_match.group(1).strip()
-                    if ip_str not in encoders:
-                        encoders.append(ip_str)
-                else:
-                    continue
+            if model_num not in model_list:
+                print(f"{model_num} is not in your list of models. Please consider adding it before running the program again.")
+            # logic for finding AMOUNT of encoders sing serial numbers
+            if model_num == 'ENC-4P-H264' and serial_num not in encoder_list:
+                encoder_list.append(serial_num)
 
             # logic for matching models and stripping their ID and IP
-            if row[3] == current_model:
+            if model_num == current_model:
                 if ip_match:
                     ip_str = ip_match.group(1).strip()
                     ip_list.append(ip_str)
@@ -125,7 +133,8 @@ def siphon(current_model):
                     row = {
                         ' Model ': current_model,
                         ' ID ': logicalID_str,
-                        ' IP Address ': ip_str}
+                        ' IP Address ': ip_str,
+                        ' Serial Number ': serial_num}
                     rows.append(row)
         else:
             continue
@@ -160,17 +169,21 @@ def siphon(current_model):
     with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
-def baluns_piechart():
-    global total_no_baluns, total_baluns
+# def baluns_piechart():
+#     global total_no_baluns, total_baluns
+#     data_ = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
+#     df = pd.DataFrame(data)
+total_analog = int((sum(analog_count)))
+total_digital = int((sum(digital_counts)))
+
+def chart_gen():
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
-    balun_list = []
-    no_balun_list = []
-    final_baluns_list = []
-    final_no_baluns = []
-
+    # find cameras that are/ are not on balun
     for index, row in df.iterrows():
-        if row[0] != "IslandView13" and row[3] != 'ENC-4P-H264':
+        server = row[0]
+        model_num = row[3]
+        if server != "IslandView13" and model_num != 'ENC-4P-H264':
             ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
             if ip_match:
                 ip_str = ip_match.group(1).strip()
@@ -182,15 +195,16 @@ def baluns_piechart():
             else:
                 continue
 
+    # make pie chart out of balun data
     for item in balun_list:
         if item not in final_baluns_list:
             final_baluns_list.append(item)
-            total_baluns = int(len(final_baluns_list))
+    total_baluns = int(len(final_baluns_list))
 
     for item in no_balun_list:
         if item not in final_no_baluns:
             final_no_baluns.append(item)
-            total_no_baluns = int(len(no_balun_list))
+    total_no_baluns = int(len(no_balun_list))
 
     with open(path + "baluns.csv", "a") as baluns:
         baluns.write(f"There are {total_baluns} devices on baluns.\n\n")
@@ -211,8 +225,7 @@ def baluns_piechart():
     plt.savefig(path + "baluns.png")
     plt.show()
 
-
-def models_bargraph():
+    # make bargraph for device totals
     number_path = path + 'device_totals.csv'
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
     model_data = csv['Model']
@@ -233,9 +246,10 @@ def models_bargraph():
     plt.savefig(path + "models_barplot.png")
     plt.show()
 
-
-def types_piechart():
+    # make pie chart out of device type data
     type_data = total_digital, total_analog
+    # digital_data = float(total_digital)
+    # analog_data = float(total_analog)
     plt.figure(figsize=(5, 5))
     plt.title('Digital VS Analog')
     plt.pie(type_data, autopct='%.1f%%')
@@ -243,19 +257,18 @@ def types_piechart():
     plt.savefig(path + "types_piechart.png")
     plt.show()
 
-def count_gaming_cams():
-
+    # count gaming/non-gaming regulated cameras and make pie chart
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df4 = pd.DataFrame(data)
     for index, row in df4.iterrows():
-        if row[0] == "IslandView13":
-            continue
-        log_id = str(row[5])
-        log_id = log_id.split(':')[-1].strip()
-        # name = row[1]
-        # serial_num = row[12]
+        server = row[0]
         model_num = row[3]
         location = row[4]
+        log_id = str(row[5])
+        log_id = log_id.split(':')[-1].strip()
+        if server == "IslandView13":
+            continue
+
         # if location matches gaming check if that serial number is in gaming_cams list
         if location != "GAMING":
             if log_id not in boh_cams:
@@ -264,12 +277,12 @@ def count_gaming_cams():
             gaming_cams.append(log_id)
 
         elif location == "GAMING":
-            if id not in gaming_cams:
+            if log_id not in gaming_cams:
                 gaming_cams.append(log_id)
             else:
                 continue
         else:
-            if id not in boh_cams:
+            if log_id not in boh_cams:
                 boh_cams.append(log_id)
 
     total_gaming_cams = len(set(gaming_cams))
@@ -289,23 +302,25 @@ def count_gaming_cams():
         gaming_breakdown.write(f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
 
 def main():
-    print("Scanning Site Health Report..")
+    print("Scanning Site Health Report...")
     for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
                               bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
         siphon(current_model)
+
 # run main function
 main()
+chart_gen()
 
-# make variables out of collected data
-total_analog = int((sum(analog_count)))
-total_digital = int((sum(digital_counts)))
 total_cameras = int(total_analog + total_digital)
 total_devices = int(sum(counts))
+total_encoders = len(encoder_list)
+total_ports = total_encoders * 4
+available_ports = total_ports - total_analog
 
-count_gaming_cams()
-baluns_piechart()
-types_piechart()
-models_bargraph()
-
+# count_gaming_cams()
+# baluns_piechart()
+# types_piechart()
+# models_bargraph()
+print(f'There are {total_encoders} encoders with {available_ports} open ports available')
 print(f"There are {total_analog} analogs and {total_digital} digitals")
 print(f"There are {total_cameras} total cameras and {total_devices} total devices")
