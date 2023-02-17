@@ -69,7 +69,6 @@ gaming_cams = []
 boh_cams = []
 encoders = []
 encoder_list = []
-
 balun_list = []
 no_balun_list = []
 final_baluns_list = []
@@ -173,8 +172,7 @@ def siphon(current_model):
 #     global total_no_baluns, total_baluns
 #     data_ = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
 #     df = pd.DataFrame(data)
-total_analog = int((sum(analog_count)))
-total_digital = int((sum(digital_counts)))
+
 
 def chart_gen():
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
@@ -246,8 +244,9 @@ def chart_gen():
     plt.savefig(path + "models_barplot.png")
     plt.show()
 
-    # make pie chart out of device type data
+#    make pie chart out of device type data
     type_data = total_digital, total_analog
+    print(type_data)
     # digital_data = float(total_digital)
     # analog_data = float(total_analog)
     plt.figure(figsize=(5, 5))
@@ -309,14 +308,15 @@ def main():
 
 # run main function
 main()
-chart_gen()
 
+total_analog = int((sum(analog_count)))
+total_digital = int((sum(digital_counts)))
 total_cameras = int(total_analog + total_digital)
 total_devices = int(sum(counts))
 total_encoders = len(encoder_list)
 total_ports = total_encoders * 4
 available_ports = total_ports - total_analog
-
+chart_gen()
 # count_gaming_cams()
 # baluns_piechart()
 # types_piechart()
