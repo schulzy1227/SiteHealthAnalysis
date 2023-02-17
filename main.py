@@ -105,7 +105,6 @@ def siphon(current_model):
         name = row[1]
         serial_num = row[12]
         model_num = row[3]
-        location = row[4]
         # Regex
         ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
         logicalID_match = re.match(r'.*Logical ID:(\d*)', str(row[5]))
@@ -162,16 +161,11 @@ def siphon(current_model):
 
     # logic to make dataframe out of ROWS and create new file
     df2 = pd.DataFrame(rows)
-    df2.to_csv(path + 'dataframe.csv', index=False, mode="a")
+    df2.to_csv(path + 'device_list.csv', index=False, mode="a")
 
     # logic to make file showing all models and their totals
     with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
-
-# def baluns_piechart():
-#     global total_no_baluns, total_baluns
-#     data_ = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
-#     df = pd.DataFrame(data)
 
 
 def chart_gen():
@@ -247,8 +241,7 @@ def chart_gen():
 #    make pie chart out of device type data
     type_data = total_digital, total_analog
     print(type_data)
-    # digital_data = float(total_digital)
-    # analog_data = float(total_analog)
+
     plt.figure(figsize=(5, 5))
     plt.title('Digital VS Analog')
     plt.pie(type_data, autopct='%.1f%%')
@@ -316,11 +309,9 @@ total_devices = int(sum(counts))
 total_encoders = len(encoder_list)
 total_ports = total_encoders * 4
 available_ports = total_ports - total_analog
+
 chart_gen()
-# count_gaming_cams()
-# baluns_piechart()
-# types_piechart()
-# models_bargraph()
+
 print(f'There are {total_encoders} encoders with {available_ports} open ports available')
 print(f"There are {total_analog} analogs and {total_digital} digitals")
 print(f"There are {total_cameras} total cameras and {total_devices} total devices")
