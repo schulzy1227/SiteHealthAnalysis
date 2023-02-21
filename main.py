@@ -209,13 +209,13 @@ def chart_gen():
             no_baluns.writelines(f"{item}\n")
 
     balun_data = total_baluns, total_no_baluns
-
-    plt.figure(figsize=(5, 5))
-    plt.title('Cameras With/Without Baluns')
-    plt.pie(balun_data, autopct='%.1f%%')
-    plt.legend(['Baluns', 'No Baluns'], loc='upper right')
-    plt.savefig(path + "baluns.png")
-    plt.show()
+    # pie chart baluns/no baluns
+    # plt.figure(figsize=(5, 5))
+    # plt.title('Cameras With/Without Baluns')
+    # plt.pie(balun_data, autopct='%.1f%%')
+    # plt.legend(['Baluns', 'No Baluns'], loc='upper right')
+    # plt.savefig(path + "baluns.png")
+    # plt.show()
 
     # make bargraph for device totals
     number_path = path + 'device_totals.csv'
@@ -227,27 +227,25 @@ def chart_gen():
               "#7FFF00", "#DC143C", "#006400", "#008B8B", "#B8860B", "#556B2F", "#BDB76B", "#ADFF2F", "#CD5C5C",
               "#E3CF57", "#8B2323",
               "#76EE00", "#CD2626", "#8B5742", "#FF34B3", "#FF8000", "#8B0000", "#71C671"]
-    fig = plt.figure(figsize=(7, 9))
-    plt.bar(model_data, count_data, color=colors, width=1.0)
-    plt.xticks(fontsize=7, rotation=90)
-    plt.yticks(np.arange(min(count_data) - 1, max(count_data) + 10, 20.0), fontsize=8)
-    plt.xlabel('Camera Model')
-    plt.ylabel('Number of Devices')
-    plt.title("Number of Devices by Model Number")
-    plt.subplots_adjust(bottom=.25)
-    plt.savefig(path + "models_barplot.png")
-    plt.show()
+    # fig = plt.figure(figsize=(7, 9))
+    # plt.bar(model_data, count_data, color=colors, width=1.0)
+    # plt.xticks(fontsize=7, rotation=90)
+    # plt.yticks(np.arange(min(count_data) - 1, max(count_data) + 10, 20.0), fontsize=8)
+    # plt.xlabel('Camera Model')
+    # plt.ylabel('Number of Devices')
+    # plt.title("Number of Devices by Model Number")
+    # plt.subplots_adjust(bottom=.25)
+    # plt.savefig(path + "models_barplot.png")
+    # plt.show()
 
 #    make pie chart out of device type data
     type_data = total_digital, total_analog
-    print(type_data)
-
-    plt.figure(figsize=(5, 5))
-    plt.title('Digital VS Analog')
-    plt.pie(type_data, autopct='%.1f%%')
-    plt.legend(['Digital Cameras', 'Analog Cameras'], loc='upper right')
-    plt.savefig(path + "types_piechart.png")
-    plt.show()
+    # plt.figure(figsize=(5, 5))
+    # plt.title('Digital VS Analog')
+    # plt.pie(type_data, autopct='%.1f%%')
+    # plt.legend(['Digital Cameras', 'Analog Cameras'], loc='upper right')
+    # plt.savefig(path + "types_piechart.png")
+    # plt.show()
 
     # count gaming/non-gaming regulated cameras and make pie chart
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
@@ -292,11 +290,26 @@ def chart_gen():
 
     with open(path + "gaming_cam_totals.txt", "a") as gaming_breakdown:
         gaming_breakdown.write(f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
+    gaming_data = total_gaming_cams, total_boh
+
+    # pie chart for showing gaming/non cameras
+
+    # one single function to make 4 subplots
+
+    fig, ax = plt.subplots(2, 2, sharex='col', sharey='row')
+    graph_1 = ax[0, 0].pie(balun_data)
+    graph_2 = ax[0, 1].pie(gaming_data)
+    graph_3 = ax[1, 0].pie(type_data)
+    graph_4 = ax[1, 1].bar(model_data, count_data)
+    plt.show()
+
 
 def main():
     print("Scanning Site Health Report...")
-    for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
-                              bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
+    # for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
+    #                           bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
+       # siphon(current_model)
+    for current_model in model_list:
         siphon(current_model)
 
 # run main function
