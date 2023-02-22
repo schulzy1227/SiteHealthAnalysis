@@ -61,18 +61,23 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
 # 3)A file with the amount of devices using baluns and a list of their IP Address'.
 # 4)Lastly, a file for a bar graph will be generated.\n\n"""
 digital_counts = []
-counts = []
 analog_count = []
+counts = []
+
 gaming_serial = []
 boh_serial = []
 gaming_cams = []
 boh_cams = []
+
 encoders = []
 encoder_list = []
+
 balun_list = []
 no_balun_list = []
 final_baluns_list = []
 final_no_baluns = []
+# total_gaming_cams = len(set(gaming_cams))
+# total_boh = len(set(boh_cams))
 
 # print(logo)
 # print(title_art)
@@ -167,10 +172,10 @@ def siphon(current_model):
     with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
-
 def chart_gen():
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
     df = pd.DataFrame(data)
+
     # find cameras that are/ are not on balun
     for index, row in df.iterrows():
         server = row[0]
@@ -209,43 +214,13 @@ def chart_gen():
             no_baluns.writelines(f"{item}\n")
 
     balun_data = total_baluns, total_no_baluns
-    # pie chart baluns/no baluns
-    # plt.figure(figsize=(5, 5))
-    # plt.title('Cameras With/Without Baluns')
-    # plt.pie(balun_data, autopct='%.1f%%')
-    # plt.legend(['Baluns', 'No Baluns'], loc='upper right')
-    # plt.savefig(path + "baluns.png")
-    # plt.show()
 
     # make bargraph for device totals
     number_path = path + 'device_totals.csv'
     csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
     model_data = csv['Model']
     count_data = csv['Count']
-    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#8c564b", "#191970", "#F0F8FF", "#00FFFF", "#8A2BE2",
-              "#5F9EA0",
-              "#7FFF00", "#DC143C", "#006400", "#008B8B", "#B8860B", "#556B2F", "#BDB76B", "#ADFF2F", "#CD5C5C",
-              "#E3CF57", "#8B2323",
-              "#76EE00", "#CD2626", "#8B5742", "#FF34B3", "#FF8000", "#8B0000", "#71C671"]
-    # fig = plt.figure(figsize=(7, 9))
-    # plt.bar(model_data, count_data, color=colors, width=1.0)
-    # plt.xticks(fontsize=7, rotation=90)
-    # plt.yticks(np.arange(min(count_data) - 1, max(count_data) + 10, 20.0), fontsize=8)
-    # plt.xlabel('Camera Model')
-    # plt.ylabel('Number of Devices')
-    # plt.title("Number of Devices by Model Number")
-    # plt.subplots_adjust(bottom=.25)
-    # plt.savefig(path + "models_barplot.png")
-    # plt.show()
-
-#    make pie chart out of device type data
     type_data = total_digital, total_analog
-    # plt.figure(figsize=(5, 5))
-    # plt.title('Digital VS Analog')
-    # plt.pie(type_data, autopct='%.1f%%')
-    # plt.legend(['Digital Cameras', 'Analog Cameras'], loc='upper right')
-    # plt.savefig(path + "types_piechart.png")
-    # plt.show()
 
     # count gaming/non-gaming regulated cameras and make pie chart
     data = pd.read_csv(parent_directory + 'SiteHealth.csv', skiprows=198)
@@ -277,8 +252,8 @@ def chart_gen():
 
     total_gaming_cams = len(set(gaming_cams))
     total_boh = len(set(boh_cams))
-    print("Total Gaming Cameras: ", total_gaming_cams)
-    print("Total Back of House Cameras: ", total_boh)
+    # print("Total Gaming Cameras: ", total_gaming_cams)
+    # print("Total Back of House Cameras: ", total_boh)
 
     with open(path + 'gaming_cam_list.csv', "w") as gaming_list:
         for item in gaming_cams:
@@ -293,9 +268,10 @@ def chart_gen():
     gaming_data = total_gaming_cams, total_boh
 
     # one single function to make 4 subplots
-'''    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, subplot_kw={'aspect': 'equal'}, figsize=(7, 7))
-    plt.title("Surveillance Devices")
+
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, subplot_kw={'aspect': 'equal'}, figsize=(7, 7))
     ax1.pie(balun_data, autopct='%1.1f%%', textprops={'fontsize': 8}, colors=['red', 'blue'], shadow=True)
+    # plt.title("Surveillance Devices")
     ax1.legend(['With Balun', 'Without Balun'], loc='right', bbox_to_anchor=(2.0, 0.5))
     ax2.pie(gaming_data, autopct='%1.1f%%', textprops={'fontsize': 8}, colors=['grey', 'orange'], shadow=True)
     ax2.legend(['Gaming Cameras', 'Back of House'], loc='right', bbox_to_anchor=(2.1, 0.5))
@@ -307,14 +283,12 @@ def chart_gen():
     ax2.title.set_text('Gaming Regulated Cameras vs BOH')
     ax2.title.set_size(12)
     ax3.title.set_text('Analog vs Digital Cameras')
-    ax3.title.set_size(12)'''
+    ax3.title.set_size(12)
 
-
-    # fig, ax = plt.subplots(figsize=(8, 8))
-    # ax.bar(model_data, count_data)
-    # plt.show()
-
-
+    #fig, ax = plt.subplots(figsize=(8, 8))
+    #plt.bar(model_data, count_data)
+    #plt.show()
+    return total_gaming_cams, total_boh
 
 
 def main():
@@ -336,12 +310,24 @@ total_encoders = len(encoder_list)
 total_ports = total_encoders * 4
 available_ports = total_ports - total_analog
 percentage_ports = round((total_analog / total_ports) * 100, 2)
-print(total_ports, 'total ports')
-print(total_analog, 'ports in use')
-print(percentage_ports, 'percent of ports in use')
 
 chart_gen()
 
-print(f'There are {total_encoders} encoders with {available_ports} open ports available')
+'''print(f'There are {total_encoders} encoders with {available_ports} open ports available')
 print(f"There are {total_analog} analogs and {total_digital} digitals")
 print(f"There are {total_cameras} total cameras and {total_devices} total devices")
+print(total_ports, 'total ports')
+print(total_analog, 'ports in use')
+print(percentage_ports, 'percent of ports in use')'''
+
+print(total_analog, ' total analog')
+print(total_digital, ' total digital')
+print(total_cameras, 'total cameras')
+print(total_devices, ' total devices')
+print(total_encoders, ' total encoders')
+print(total_encoders, ' total encoders')
+print(total_ports, ' total ports')
+print(available_ports, ' available ports')
+print(percentage_ports, ' percentage ports')
+print(total_gaming_cams, " Gaming Cameras" )
+print(total_boh, ' total BOH')
