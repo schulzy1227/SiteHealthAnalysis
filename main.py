@@ -292,16 +292,29 @@ def chart_gen():
         gaming_breakdown.write(f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
     gaming_data = total_gaming_cams, total_boh
 
-    # pie chart for showing gaming/non cameras
-
     # one single function to make 4 subplots
+'''    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, subplot_kw={'aspect': 'equal'}, figsize=(7, 7))
+    plt.title("Surveillance Devices")
+    ax1.pie(balun_data, autopct='%1.1f%%', textprops={'fontsize': 8}, colors=['red', 'blue'], shadow=True)
+    ax1.legend(['With Balun', 'Without Balun'], loc='right', bbox_to_anchor=(2.0, 0.5))
+    ax2.pie(gaming_data, autopct='%1.1f%%', textprops={'fontsize': 8}, colors=['grey', 'orange'], shadow=True)
+    ax2.legend(['Gaming Cameras', 'Back of House'], loc='right', bbox_to_anchor=(2.1, 0.5))
+    ax3.pie(type_data, autopct='%1.1f%%', textprops={'fontsize': 8}, colors=['purple', 'pink'], shadow=True)
+    ax3.legend(['Analog Cameras', 'Digital Cameras'], loc='right', bbox_to_anchor=(2.1, 0.5))
+    # title customization
+    ax1.title.set_text('Cameras With/Without Baluns')
+    ax1.title.set_size(12)
+    ax2.title.set_text('Gaming Regulated Cameras vs BOH')
+    ax2.title.set_size(12)
+    ax3.title.set_text('Analog vs Digital Cameras')
+    ax3.title.set_size(12)'''
 
-    fig, ax = plt.subplots(2, 2, sharex='col', sharey='row')
-    graph_1 = ax[0, 0].pie(balun_data)
-    graph_2 = ax[0, 1].pie(gaming_data)
-    graph_3 = ax[1, 0].pie(type_data)
-    graph_4 = ax[1, 1].bar(model_data, count_data)
-    plt.show()
+
+    # fig, ax = plt.subplots(figsize=(8, 8))
+    # ax.bar(model_data, count_data)
+    # plt.show()
+
+
 
 
 def main():
@@ -314,7 +327,7 @@ def main():
 
 # run main function
 main()
-
+'''Below is collected data for further comparisons'''
 total_analog = int((sum(analog_count)))
 total_digital = int((sum(digital_counts)))
 total_cameras = int(total_analog + total_digital)
@@ -322,6 +335,10 @@ total_devices = int(sum(counts))
 total_encoders = len(encoder_list)
 total_ports = total_encoders * 4
 available_ports = total_ports - total_analog
+percentage_ports = round((total_analog / total_ports) * 100, 2)
+print(total_ports, 'total ports')
+print(total_analog, 'ports in use')
+print(percentage_ports, 'percent of ports in use')
 
 chart_gen()
 
