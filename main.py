@@ -6,7 +6,7 @@ from tqdm import tqdm
 from datetime import datetime
 import os
 import shutil
-
+#print poop
 parent_directory = "C:\\data_pull_downloads\\"
 date = datetime.today().strftime('%m:%d:%Y')
 month_year = input("What is the month and year for this inventory? (format: JAN2023)")
