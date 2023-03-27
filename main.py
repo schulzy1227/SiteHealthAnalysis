@@ -6,8 +6,17 @@ from tqdm import tqdm
 from datetime import datetime
 import os
 import shutil
+import csv
 
 parent_directory = "C:\\data_pull_downloads\\"
+### new
+now = datetime.now()
+formatted_date = now.strftime("%m-%Y (%H:%M)")
+filename = parent_directory + "device_totals.csv"
+
+### end new
+
+# parent_directory = "C:\\data_pull_downloads\\"
 date = datetime.today().strftime('%m:%d:%Y')
 month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 path = os.path.join(parent_directory, month_year + '\\')
@@ -22,7 +31,6 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
               "4.0C-H5A-DC1", "5.0C-H6M-D1-IR", "5.0L-H4A-D1", "2.0C-H4A-DC1-B", "IMP121",
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR",
               "ENC-4P-H264"]
-print(len(model_list))
 analog_serials = []
 # digital_serials = []
 digital_counts = []
@@ -71,31 +79,32 @@ def siphon(current_model):
         # Skip rows that start with Island View 13
         if server != "IslandView13":
             # logic for finding missing model numbers
-            if model_num not in model_list:
-                print(
-                    f"{model_num} is not in your list of models. Please consider adding it before running the program again.")
-        # logic for finding AMOUNT of encoders using serial numbers
-        if model_num == 'ENC-4P-H264' and serial_num not in encoder_list:
-            encoder_list.append(serial_num)
+            # if model_num not in model_list:
+            #     print(
+            #         f"{model_num} is not in your list of models. Please consider adding it before running the program again.{model}")
 
-        # logic for matching models and stripping their ID and IP
-        if model_num == current_model:
-            if ip_match:
-                ip_str = ip_match.group(1).strip()
-                ip_list.append(ip_str)
+            # logic for finding AMOUNT of encoders using serial numbers
+            if model_num == 'ENC-4P-H264' and serial_num not in encoder_list:
+                encoder_list.append(serial_num)
+
+            # logic for matching models and stripping their ID and IP
+            if model_num == current_model:
+                if ip_match:
+                    ip_str = ip_match.group(1).strip()
+                    ip_list.append(ip_str)
+                else:
+                    ip_str = "X"
+                if logicalID_match:
+                    logicalID_str = logicalID_match.group(1).strip()
+                    id_list.append(logicalID_str)
+                    row = {
+                        ' Model ': current_model,
+                        ' ID ': logicalID_str,
+                        ' IP Address ': ip_str,
+                        ' Serial Number ': serial_num}
+                    rows.append(row)
             else:
-                ip_str = "X"
-            if logicalID_match:
-                logicalID_str = logicalID_match.group(1).strip()
-                id_list.append(logicalID_str)
-                row = {
-                    ' Model ': current_model,
-                    ' ID ': logicalID_str,
-                    ' IP Address ': ip_str,
-                    ' Serial Number ': serial_num}
-                rows.append(row)
-        else:
-            continue
+                continue
 
     # find amount of ID's in list
     count = len(set(id_list))
@@ -125,10 +134,10 @@ def siphon(current_model):
     with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
-    csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
-    model_data = csv['Model']
-    count_data = csv['Count']
-    # print(sum(count_data))
+    csv_one = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
+    model_data = csv_one['Model']
+    count_data = csv_one['Count']
+
     # find cameras that are/ are not on balun
     for index, row in df.iterrows():
         server = row[0]
@@ -143,8 +152,6 @@ def siphon(current_model):
                     balun_list.append(ip_str)
                 elif int(octets[3]) >= 200 and model_num != 'ENC-4P-H264' and ip_str not in no_balun_list:
                     no_balun_list.append(ip_str)
-        # elif ip_str not in no_balun_list:
-        #         no_balun_list.append(ip_str)
         else:
             continue
 
@@ -196,15 +203,42 @@ def siphon(current_model):
         gaming_breakdown.write(
             f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
 
+    ### NEW
+    # new_column_header = f'{formatted_date}'.format(
+    #     len(open(filename).readline().split(",")))  # get the number of existing columns and add 1 for the new column
+    # if os.path.exists(filename):
+    #     with open(filename, "r") as csvfile:
+    #         reader = csv.reader(csvfile)
+    #         headers = next(reader)  # get the existing headers
+    #
+    #         if new_column_header not in headers:  # if the new column doesn't exist yet
+    #             headers.append(new_column_header)  # add it to the headers
+    #             rows = [row for row in reader]  # read the existing rows
+    #             # rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
+    #             #         rows]  # pad the existing rows with empty cells for the new column
+    #             rows = [[row[i] if i < len(row) else counts for i in range(len(headers))] for row in
+    #                     rows]
+    #             with open(filename, "w", newline="") as outfile:
+    #                 writer = csv.writer(outfile)
+    #                 writer.writerow(headers)
+    #                 writer.writerows(rows)  # write the updated rows
+    # else:
+    #     with open(filename, "w", newline="") as outfile:  # if the file doesn't exist yet, create it with the new column
+    #         writer = csv.writer(outfile)
+    #         writer.writerow([new_column_header])
+    ### END NEW
+
 
 def chart_gen():
-    csv = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
-    model_data = csv['Model']
-    count_data = csv['Count']
+    csv_two = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
+    model_data = csv_two['Model']
+    count_data = csv_two['Count']
 
+    # pie chart to show what percentage of the total devices each model is
     for i in count_data:
         model_percentage = (i / sum(count_data) * 100)
-        print(round(model_percentage),2)
+        print(round(model_percentage), 2)
+
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, subplot_kw={'aspect': 'equal'}, figsize=(7, 7))
     ax1.pie(balun_data, autopct='%1.1f%%', textprops={'fontsize': 8}, colors=['red', 'blue'], shadow=True)
     ax1.legend(['With Balun', 'Without Balun'], loc='right', bbox_to_anchor=(2.0, 0.5))
@@ -246,12 +280,71 @@ def main():
                               bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
         siphon(current_model)
 
+# def make_db():
+#     new_column_header = f'{formatted_date}'.format(
+#         len(open(filename).readline().split(",")))  # get the number of existing columns and add 1 for the new column
+#     if os.path.exists(filename):
+#         with open(filename, "r") as csvfile:
+#             reader = csv.reader(csvfile)
+#             headers = next(reader)  # get the existing headers
+#
+#             if new_column_header not in headers:  # if the new column doesn't exist yet
+#                 headers.append(new_column_header)  # add it to the headers
+#                 rows = [row for row in reader]  # read the existing rows
+#                 # rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
+#                 #         rows]  # pad the existing rows with empty cells for the new column
+#                 rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
+#                         rows]
+#                 with open(filename, "w", newline="") as outfile:
+#                     writer = csv.writer(outfile)
+#                     writer.writerow(headers)
+#                     writer.writerows(rows)  # write the updated rows
+#     else:
+#         with open(filename, "w", newline="") as outfile:  # if the file doesn't exist yet, create it with the new column
+#             writer = csv.writer(outfile)
+#             writer.writerow([new_column_header])
+def make_db():
+    new_column_header = f'{formatted_date}'.format(
+        len(open(filename).readline().split(",")))  # get the number of existing columns and add 1 for the new column
+    if os.path.exists(filename):
+        with open(filename, "r") as csvfile:
+            reader = csv.reader(csvfile)
+            headers = next(reader)  # get the existing headers
+
+            if new_column_header not in headers:  # if the new column doesn't exist yet
+                headers.append(new_column_header)  # add it to the headers
+                rows = [row for row in reader]  # read the existing rows
+                # rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
+                #         rows]  # pad the existing rows with empty cells for the new column
+                rows = [[row[i] if i < len(row) else counts[j] for i in range(len(headers))] for j, row in
+                        enumerate(rows)]
+                with open(filename, "w", newline="") as outfile:
+                    writer = csv.writer(outfile)
+                    writer.writerow(headers)
+                    writer.writerows(rows)  # write the updated rows
+    else:
+        with open(filename, "w", newline="") as outfile:  # if the file doesn't exist yet, create it with the new column
+            writer = csv.writer(outfile)
+            writer.writerow([new_column_header])
+
+    # Write each count to a separate cell in the new column
+    # with open(filename, "r") as csvfile:
+    #     reader = csv.reader(csvfile)
+    #     headers = next(reader)  # get the existing headers
+    #     if new_column_header in headers:
+    #         rows = [row for row in reader]  # read the existing rows
+    #         with open(filename, "w", newline="") as outfile:
+    #             writer = csv.writer(outfile)
+    #             writer.writerow(headers)
+    #             for i, row in enumerate(rows):
+    #                 row.append(counts[i])
+    #                 writer.writerow(row)
+
 
 # run main function
 main()
-
+make_db()
 '''Below is collected data for further comparisons'''
-print(digital_counts)
 print(counts)
 total_analog = str(analog_count[0])
 total_analog = int(total_analog)
@@ -272,23 +365,22 @@ total_boh = len(set(boh_cams))
 gaming_data = total_gaming_cams, total_boh
 balun_data = total_baluns, total_no_baluns
 
-chart_gen()
+# chart_gen()
 
-
-print(total_analog, ' total analog')
-print(total_digital, ' total digital')
-print(total_cameras, 'total cameras')
-print(total_devices, ' total devices\n')
-
-print(total_encoders, ' total encoders')
-print(total_ports, ' total ports')
-print(available_ports, ' available ports')
-print(percentage_ports, ' percentage ports\n')
-
-print(total_gaming_cams, " Gaming Cameras")
-print(total_boh, ' total BOH')
-print(total_baluns, ' total baluns')
-print(total_no_baluns, ' no baluns')
+# print(total_analog, ' total analog')
+# print(total_digital, ' total digital')
+# print(total_cameras, 'total cameras')
+# print(total_devices, ' total devices\n')
+#
+# print(total_encoders, ' total encoders')
+# print(total_ports, ' total ports')
+# print(available_ports, ' available ports')
+# print(percentage_ports, ' percentage ports\n')
+#
+# print(total_gaming_cams, " Gaming Cameras")
+# print(total_boh, ' total BOH')
+# print(total_baluns, ' total baluns')
+# print(total_no_baluns, ' no baluns')
 
 with open(path + 'numbers_x', 'a') as num_x:
     num_x.writelines(
