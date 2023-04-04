@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 # Avigilon Site Health Analysis 
 
