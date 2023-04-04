@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # Avigilon Site Health Analysis 
 
@@ -8,7 +9,6 @@ The script prompts the user to input the month and year for the inventory being 
 The summary report contains information about the number of devices by model, the number of analog and digital devices, the number of gaming and BOH (back of house) cameras, the number of encoders, and the number of baluns. The report also includes a list of logical IDs for each model. The script writes the summary report to a new CSV file in the directory created earlier.
 
 The script includes several comments and logic statements that are currently commented out but could be used to extend the functionality of the script in the future. The script is designed to be run on a Windows machine, and the parent directory for the CSV file and the new directory must be updated to match the user's file structure.
-
 
 
 ## Explanation of Variables:
@@ -42,3 +42,4 @@ The script includes several comments and logic statements that are currently com
 **gaming_data**: This creates a tuple of total_gaming_cams and total_boh. The variable gaming_data represents the number of gaming cameras and BOH cameras, _respectively_.
 
 **balun_data**: This creates a tuple of total_baluns and total_no_baluns. The variable balun_data represents the number of cameras with baluns and without baluns, _respectively_.
+
