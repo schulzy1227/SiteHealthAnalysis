@@ -9,12 +9,9 @@ import shutil
 import csv
 
 parent_directory = "C:\\data_pull_downloads\\"
-### new
 now = datetime.now()
-formatted_date = now.strftime("%m-%Y (%H:%M)")
+formatted_date = now.strftime("%m-%d-%Y (%H:%M)")
 filename = parent_directory + "device_totals.csv"
-
-### end new
 
 # parent_directory = "C:\\data_pull_downloads\\"
 date = datetime.today().strftime('%m:%d:%Y')
@@ -32,7 +29,6 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR",
               "ENC-4P-H264"]
 analog_serials = []
-# digital_serials = []
 digital_counts = []
 analog_count = []
 counts = []
@@ -49,6 +45,7 @@ total_baluns = int(len(balun_list))
 total_gaming_cams = len(set(gaming_cams))
 total_boh = len(set(boh_cams))
 number_path = path + 'device_totals.csv'
+logical_id_list = []
 
 # logic to make new folder for all generated files
 path = os.path.join(parent_directory, month_year + '\\')
@@ -81,7 +78,7 @@ def siphon(current_model):
             # logic for finding missing model numbers
             # if model_num not in model_list:
             #     print(
-            #         f"{model_num} is not in your list of models. Please consider adding it before running the program again.{model}")
+            #         f"{model_num} is not in your list of models. Please consider adding it before running the program again.")
 
             # logic for finding AMOUNT of encoders using serial numbers
             if model_num == 'ENC-4P-H264' and serial_num not in encoder_list:
@@ -97,6 +94,7 @@ def siphon(current_model):
                 if logicalID_match:
                     logicalID_str = logicalID_match.group(1).strip()
                     id_list.append(logicalID_str)
+                    logical_id_list.append(int(logicalID_str))
                     row = {
                         ' Model ': current_model,
                         ' ID ': logicalID_str,
@@ -105,7 +103,6 @@ def siphon(current_model):
                     rows.append(row)
             else:
                 continue
-
     # find amount of ID's in list
     count = len(set(id_list))
     # convert to int
@@ -203,31 +200,6 @@ def siphon(current_model):
         gaming_breakdown.write(
             f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
 
-    ### NEW
-    # new_column_header = f'{formatted_date}'.format(
-    #     len(open(filename).readline().split(",")))  # get the number of existing columns and add 1 for the new column
-    # if os.path.exists(filename):
-    #     with open(filename, "r") as csvfile:
-    #         reader = csv.reader(csvfile)
-    #         headers = next(reader)  # get the existing headers
-    #
-    #         if new_column_header not in headers:  # if the new column doesn't exist yet
-    #             headers.append(new_column_header)  # add it to the headers
-    #             rows = [row for row in reader]  # read the existing rows
-    #             # rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
-    #             #         rows]  # pad the existing rows with empty cells for the new column
-    #             rows = [[row[i] if i < len(row) else counts for i in range(len(headers))] for row in
-    #                     rows]
-    #             with open(filename, "w", newline="") as outfile:
-    #                 writer = csv.writer(outfile)
-    #                 writer.writerow(headers)
-    #                 writer.writerows(rows)  # write the updated rows
-    # else:
-    #     with open(filename, "w", newline="") as outfile:  # if the file doesn't exist yet, create it with the new column
-    #         writer = csv.writer(outfile)
-    #         writer.writerow([new_column_header])
-    ### END NEW
-
 
 def chart_gen():
     csv_two = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
@@ -280,29 +252,7 @@ def main():
                               bar_format='{desc}{percentage:3.0f}%|{bar:20}'):
         siphon(current_model)
 
-# def make_db():
-#     new_column_header = f'{formatted_date}'.format(
-#         len(open(filename).readline().split(",")))  # get the number of existing columns and add 1 for the new column
-#     if os.path.exists(filename):
-#         with open(filename, "r") as csvfile:
-#             reader = csv.reader(csvfile)
-#             headers = next(reader)  # get the existing headers
-#
-#             if new_column_header not in headers:  # if the new column doesn't exist yet
-#                 headers.append(new_column_header)  # add it to the headers
-#                 rows = [row for row in reader]  # read the existing rows
-#                 # rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
-#                 #         rows]  # pad the existing rows with empty cells for the new column
-#                 rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
-#                         rows]
-#                 with open(filename, "w", newline="") as outfile:
-#                     writer = csv.writer(outfile)
-#                     writer.writerow(headers)
-#                     writer.writerows(rows)  # write the updated rows
-#     else:
-#         with open(filename, "w", newline="") as outfile:  # if the file doesn't exist yet, create it with the new column
-#             writer = csv.writer(outfile)
-#             writer.writerow([new_column_header])
+
 def make_db():
     new_column_header = f'{formatted_date}'.format(
         len(open(filename).readline().split(",")))  # get the number of existing columns and add 1 for the new column
@@ -327,25 +277,108 @@ def make_db():
             writer = csv.writer(outfile)
             writer.writerow([new_column_header])
 
-    # Write each count to a separate cell in the new column
-    # with open(filename, "r") as csvfile:
-    #     reader = csv.reader(csvfile)
-    #     headers = next(reader)  # get the existing headers
-    #     if new_column_header in headers:
-    #         rows = [row for row in reader]  # read the existing rows
-    #         with open(filename, "w", newline="") as outfile:
-    #             writer = csv.writer(outfile)
-    #             writer.writerow(headers)
-    #             for i, row in enumerate(rows):
-    #                 row.append(counts[i])
-    #                 writer.writerow(row)
 
+def find_next_id(list):
+    lowest_num = min(list)
+    for i in range(lowest_num, len(list) + 1):
+        if i not in list:
+            print(i)
+            return i
+    return len(list) + 1
+
+
+'''start new
+MATH FUNCTIONS'''
+filepath = 'C:\\data_pull_downloads\\device_totals.csv'
+
+df = pd.read_csv(filepath)
+subset_df = df.iloc[0:, 1:]
+num_rows = df.shape[0]
+num_cols = df.shape[1]
+
+
+# equation functions
+def row_sum(row):
+    return row.sum()
+
+
+def row_mean(row):
+    return round(row.mean(), 1)
+
+
+def row_median(row):
+    return int(row.median())
+
+
+def row_diff(row):
+    return row.max() - row.min()
+
+
+def row_std(row):
+    return round(row.std(), 1)
+
+
+def row_var(row):
+    return round(row.var(), 1)
+
+
+def row_range(row):
+    return row.max() - row.min()
+
+
+def row_coeff_var(row):
+    mean = row.mean()
+    std = row.std()
+    if mean == 0:
+        return 0
+    else:
+        return round((std / mean) * 100, 1)
+
+
+# count total devices of each column
+def column_sum(column):
+    return int(sum(column))
+
+
+# Apply the row-level functions to each row of the DataFrame
+row_sums = subset_df.apply(row_sum, axis=1)
+row_means = subset_df.apply(row_mean, axis=1)
+row_medians = subset_df.apply(row_median, axis=1)
+row_diffs = subset_df.apply(row_diff, axis=1)
+row_stds = subset_df.apply(row_std, axis=1)
+row_vars = subset_df.apply(row_var, axis=1)
+row_ranges = subset_df.apply(row_range, axis=1)
+row_coeff_vars: object = subset_df.apply(row_coeff_var, axis=1)
+
+column_sums = subset_df.apply(column_sum, axis=0)
+
+# Combine the results into a single DataFrame
+results_df = pd.DataFrame({
+    'row sums': row_sums,
+    'row means': row_means,
+    'row medians': row_medians,
+    'max difference': row_diffs,
+    'standard deviation': row_stds,
+    'variance': row_vars,
+    'range': row_ranges,
+    'coefficient of variation': row_coeff_vars
+})
+
+# make dataframe that has date and column totals of devices
+totals_df = pd.DataFrame({'column sums': column_sums})
+
+# Save the results to a CSV file
+results_df.to_csv('C:\\data_pull_downloads\\inv_analysis\\results.csv', index=True)
+totals_df.to_csv('C:\\data_pull_downloads\\inv_analysis\\totals.csv', index=True)
+
+'''END NEW'''
 
 # run main function
 main()
 make_db()
+find_next_id(logical_id_list)
+
 '''Below is collected data for further comparisons'''
-print(counts)
 total_analog = str(analog_count[0])
 total_analog = int(total_analog)
 total_digital = (sum(digital_counts))
@@ -365,34 +398,19 @@ total_boh = len(set(boh_cams))
 gaming_data = total_gaming_cams, total_boh
 balun_data = total_baluns, total_no_baluns
 
-# chart_gen()
-
-# print(total_analog, ' total analog')
-# print(total_digital, ' total digital')
-# print(total_cameras, 'total cameras')
-# print(total_devices, ' total devices\n')
-#
-# print(total_encoders, ' total encoders')
-# print(total_ports, ' total ports')
-# print(available_ports, ' available ports')
-# print(percentage_ports, ' percentage ports\n')
-#
-# print(total_gaming_cams, " Gaming Cameras")
-# print(total_boh, ' total BOH')
-# print(total_baluns, ' total baluns')
-# print(total_no_baluns, ' no baluns')
-
 with open(path + 'numbers_x', 'a') as num_x:
     num_x.writelines(
-        f'{total_analog}, total analog\n'
-        f'{total_digital}, total digital\n'
-        f'{total_cameras}, total cameras\n'
-        f'{total_devices}, total devices\n'
-        f'{total_encoders}, total encoders\n'
-        f'{total_ports}, total ports\n'
-        f'{available_ports}, available ports\n'
-        f'{percentage_ports}%, ports in use\n'
-        f'{total_gaming_cams}, total gaming cameras\n'
-        f'{total_boh}, total back of house\n'
-        f'{total_baluns}, total cams with baluns.\n'
-        f'{total_no_baluns}, total no baluns\n')
+        f'Total Analog: {total_analog}\n'
+        f'Total Digital: {total_digital}\n'
+        f'Total Cameras: {total_cameras}\n'
+        f'Total Devices: {total_devices}\n'
+        f'Total Encoders: {total_encoders}\n'
+        f'Total Ports: {total_ports}\n'
+        f'Available Ports: {available_ports}\n'
+        f'Percentage of Ports in Use: {percentage_ports}%\n'
+        f'Total Gaming Cameras: {total_gaming_cams}\n'
+        f'Total Back-of-House Cameras: {total_boh}\n'
+        f'Total Cameras Utilizing Baluns: {total_baluns}\n'
+        f'Total Cameras Not Utilizing Baluns: {total_no_baluns}\n')
+
+chart_gen()
