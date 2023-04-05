@@ -51,10 +51,7 @@ data = pd.read_csv(parent_directory + 'IslandView.csv', skiprows=198)
 df = pd.DataFrame(data)
 df.to_csv(path + 'df.csv')
 
-
-# SIPHON is the main filtering function
 def siphon(current_model):
-
     id_list = []
     ip_list = []
     rows = []
@@ -68,7 +65,6 @@ def siphon(current_model):
         ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', ip_add)
         logicalID_match = re.match(r'.*Logical ID:(\d*)', logic_id)
 
-        # Skip rows that start with Island View 13
         if server != "IslandView13":
             # logic for finding AMOUNT of encoders using serial numbers
             if model_num == 'ENC-4P-H264' and serial_num not in encoder_list:
@@ -92,6 +88,18 @@ def siphon(current_model):
                         ' Serial Number ': serial_num}
                     rows.append(row)
 
+                if server != "IslandView13" and model_num != 'ENC-4P-H264':
+                    # ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
+                    if ip_match:
+                        ip_str = ip_match.group(1).strip()
+                        octets = ip_str.split('.')
+                        if int(octets[3]) <= 199 and model_num != 'ENC-4P-H264' and ip_str not in balun_list:
+                            balun_list.append(ip_str)
+                        elif int(octets[3]) >= 200 and model_num != 'ENC-4P-H264' and ip_str not in no_balun_list:
+                            no_balun_list.append(ip_str)
+                else:
+                    continue
+
     # find amount of ID's in list
     count = len(set(id_list))
     # convert to int
@@ -112,7 +120,6 @@ def siphon(current_model):
         digital_counts.append(count)
     counts.append(count)
 
-    # logic to make dataframe out of ROWS and create new file
     df3 = pd.DataFrame(rows)
     df3.to_csv(path + 'device_list.csv', index=False, mode="a")
 
@@ -127,22 +134,6 @@ def siphon(current_model):
         for row in reader:
             model_data.append(row[0])
             count_data.append(row[1])
-
-    for row in df.itertuples(index=False):
-        server = row[0]
-        model_num = row[3]
-
-        if server != "IslandView13" and model_num != 'ENC-4P-H264':
-            ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', str(row[8]))
-            if ip_match:
-                ip_str = ip_match.group(1).strip()
-                octets = ip_str.split('.')
-                if int(octets[3]) <= 199 and model_num != 'ENC-4P-H264' and ip_str not in balun_list:
-                    balun_list.append(ip_str)
-                elif int(octets[3]) >= 200 and model_num != 'ENC-4P-H264' and ip_str not in no_balun_list:
-                    no_balun_list.append(ip_str)
-        else:
-            continue
 
     with open(path + "baluns.csv", "a") as baluns:
         baluns.write(f"There are {total_baluns} devices on baluns.\n\n")
@@ -271,16 +262,6 @@ def make_db():
             writer = csv.writer(outfile)
             writer.writerow([new_column_header])
 
-
-# def find_next_id(list):
-#     lowest_num = min(list)
-#     for i in range(lowest_num, len(list) + 1):
-#         if i not in list:
-#             return i
-#     return len(list) + 1
-
-'''start new
-MATH FUNCTIONS'''
 filepath = 'C:\\data_pull_downloads\\device_totals.csv'
 
 df2 = pd.read_csv(filepath)
@@ -289,28 +270,13 @@ num_rows = df2.shape[0]
 num_cols = df2.shape[1]
 
 def analyze_dataframe(df):
-    """
-    Analyzes a pandas DataFrame and returns a summary of each row and column.
-
-    Args:
-        df (pandas.DataFrame): The DataFrame to analyze.
-
-    Returns:
-        dict: A dictionary containing the summary of each row and column.
-    """
     result = {}
 
     # Analyze rows
     for i, row in df.iterrows():
-        row_result = {}
-        row_result['sum'] = row_sum(row)
-        row_result['mean'] = row_mean(row)
-        row_result['median'] = row_median(row)
-        row_result['diff'] = row_diff(row)
-        row_result['std'] = row_std(row)
-        row_result['var'] = row_var(row)
-        row_result['range'] = row_range(row)
-        row_result['coeff_var'] = row_coeff_var(row)
+        row_result = {'sum': row_sum(row), 'mean': row_mean(row), 'median': row_median(row), 'diff': row_diff(row),
+                      'std': row_std(row), 'var': row_var(row), 'range': row_range(row),
+                      'coeff_var': row_coeff_var(row)}
         result[f'row_{i}'] = row_result
 
     # Analyze columns
@@ -333,8 +299,7 @@ def row_median(row):
 
 
 def row_diff(row):
-    if row.max() - row.min() > 5:
-        print(f'{row} has a large difference.')
+    # if row.max() - row.min() > 5:
     return row.max() - row.min()
 
 
@@ -394,8 +359,6 @@ totals_df = pd.DataFrame({'column sums': column_sums})
 results_df.to_csv('C:\\data_pull_downloads\\inv_analysis\\results.csv', index=True)
 totals_df.to_csv('C:\\data_pull_downloads\\inv_analysis\\totals.csv', index=True)
 
-'''END NEW'''
-
 # run main function
 main()
 make_db()
@@ -413,13 +376,9 @@ total_ports = total_encoders * 4
 available_ports = total_ports - total_analog
 percentage_ports = round((total_analog / total_ports) * 100, 2)
 type_data = total_digital, total_analog
-# noinspection PyRedeclaration
 total_no_baluns = int(len(no_balun_list))
-# noinspection PyRedeclaration
 total_baluns = int(len(balun_list))
-# noinspection PyRedeclaration
 total_gaming_cams = len(set(gaming_cams))
-# noinspection PyRedeclaration
 total_boh = len(set(boh_cams))
 gaming_data = total_gaming_cams, total_boh
 balun_data = total_baluns, total_no_baluns
