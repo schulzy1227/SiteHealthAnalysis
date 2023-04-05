@@ -288,49 +288,6 @@ subset_df = df2.iloc[0:, 1:]
 num_rows = df2.shape[0]
 num_cols = df2.shape[1]
 
-
-# equation functions
-# def row_sum(row):
-#     return row.sum()
-#
-#
-# def row_mean(row):
-#     return round(row.mean(), 1)
-#
-#
-# def row_median(row):
-#     return int(row.median())
-#
-#
-# def row_diff(row):
-#     return row.max() - row.min()
-#
-#
-# def row_std(row):
-#     return round(row.std(), 1)
-#
-#
-# def row_var(row):
-#     return round(row.var(), 1)
-#
-#
-# def row_range(row):
-#     return row.max() - row.min()
-#
-#
-# def row_coeff_var(row):
-#     mean = row.mean()
-#     std = row.std()
-#     if mean == 0:
-#         return 0
-#     else:
-#         return round((std / mean) * 100, 1)
-#
-#
-# # count total devices of each column
-# def column_sum(column):
-#     return int(sum(column))
-
 def analyze_dataframe(df):
     """
     Analyzes a pandas DataFrame and returns a summary of each row and column.
