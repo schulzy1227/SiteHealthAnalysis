@@ -5,20 +5,23 @@ import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 import os
-import shutil
 import csv
+import shutil
 
 parent_directory = "C:\\data_pull_downloads\\"
 now = datetime.now()
 formatted_date = now.strftime("%m-%d-%Y (%H:%M)")
 filename = parent_directory + "device_totals.csv"
 
-# parent_directory = "C:\\data_pull_downloads\\"
 date = datetime.today().strftime('%m:%d:%Y')
-month_year = input("What is the month and year for this inventory? (format: JAN2023)")
+month_year = "FEB2023"
+# month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 path = os.path.join(parent_directory, month_year + '\\')
+if os.path.exists(path):
+    shutil.rmtree(path)
+os.makedirs(path, exist_ok=True)
 
-model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
+model_list = ("1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2.0C-H6M-D1",
               "2.0C-H4PTZ-DC30", "3.0C-H4A-D1-B", "3.0C-H4A-DC1-B",
               "3.0C-H4SL-D1", "3.0C-H4A-DO1-B", "24C-H4A-3MH-180", "2.0C-H5A-D1",
               "2.0C-H4PTZ-DP30", "2.0C-H5SL-D1", "3.0C-H5SL-D1", "4.0C-H5A-DO1", "3.0C-H4A-DC1", "1.3C-H5SL-D1",
@@ -27,16 +30,13 @@ model_list = ["1.3C-H4SL-D1", "2.0C-H4A-D1-B", "2.0C-H4A-DC2", "2.0C-H4M-D1", "2
               "15C-H4A-3MH-180",
               "4.0C-H5A-DC1", "5.0C-H6M-D1-IR", "5.0L-H4A-D1", "2.0C-H4A-DC1-B", "IMP121",
               "6.0L-H4F-DO1-IR", "2.0C-H5A-PTZ-DC36", "5.0C-H5A-BO2-IR", "12.0W-H5A-FE-DO1-IR", "6.0C-H5DH-DO1-IR",
-              "ENC-4P-H264"]
+              "ENC-4P-H264")
 analog_serials = []
 digital_counts = []
 analog_count = []
 counts = []
-gaming_serial = []
-boh_serial = []
 gaming_cams = []
 boh_cams = []
-encoders = []
 encoder_list = []
 balun_list = []
 no_balun_list = []
@@ -47,24 +47,18 @@ total_boh = len(set(boh_cams))
 number_path = path + 'device_totals.csv'
 logical_id_list = []
 
-# logic to make new folder for all generated files
-path = os.path.join(parent_directory, month_year + '\\')
-# if path already exists, delete and make new
-if os.path.exists(path):
-    shutil.rmtree(path)
-os.mkdir(path)
+data = pd.read_csv(parent_directory + 'IslandView.csv', skiprows=198)
+df = pd.DataFrame(data)
+df.to_csv(path + 'df.csv')
 
 
 # SIPHON is the main filtering function
 def siphon(current_model):
-    data = pd.read_csv(parent_directory + 'IslandView.csv', skiprows=198)
-    df = pd.DataFrame(data)
 
     id_list = []
     ip_list = []
     rows = []
-
-    for index, row in df.iterrows():
+    for row in df.itertuples(index=False):
         server = row[0]
         serial_num = row[12]
         model_num = row[3]
@@ -73,13 +67,9 @@ def siphon(current_model):
         # Regex
         ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', ip_add)
         logicalID_match = re.match(r'.*Logical ID:(\d*)', logic_id)
+
         # Skip rows that start with Island View 13
         if server != "IslandView13":
-            # logic for finding missing model numbers
-            # if model_num not in model_list:
-            #     print(
-            #         f"{model_num} is not in your list of models. Please consider adding it before running the program again.")
-
             # logic for finding AMOUNT of encoders using serial numbers
             if model_num == 'ENC-4P-H264' and serial_num not in encoder_list:
                 encoder_list.append(serial_num)
@@ -101,8 +91,7 @@ def siphon(current_model):
                         ' IP Address ': ip_str,
                         ' Serial Number ': serial_num}
                     rows.append(row)
-            else:
-                continue
+
     # find amount of ID's in list
     count = len(set(id_list))
     # convert to int
@@ -124,19 +113,22 @@ def siphon(current_model):
     counts.append(count)
 
     # logic to make dataframe out of ROWS and create new file
-    df2 = pd.DataFrame(rows)
-    df2.to_csv(path + 'device_list.csv', index=False, mode="a")
+    df3 = pd.DataFrame(rows)
+    df3.to_csv(path + 'device_list.csv', index=False, mode="a")
 
     # logic to make file showing all models and their totals
     with open(path + "device_totals.csv", "a") as final:
         final.writelines(f"{current_model}: {count}\n")
 
-    csv_one = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
-    model_data = csv_one['Model']
-    count_data = csv_one['Count']
+    with open(number_path, 'r') as csvfile:
+        reader = csv.reader(csvfile, delimiter=':')
+        model_data = []
+        count_data = []
+        for row in reader:
+            model_data.append(row[0])
+            count_data.append(row[1])
 
-    # find cameras that are/ are not on balun
-    for index, row in df.iterrows():
+    for row in df.itertuples(index=False):
         server = row[0]
         model_num = row[3]
 
@@ -161,9 +153,8 @@ def siphon(current_model):
         no_baluns.write(f"There are {total_no_baluns} devices not on baluns.\n\n")
         for item in no_balun_list:
             no_baluns.writelines(f"{item}\n")
-    # count gaming/non-gaming regulated cameras and make pie chart
-    df4 = pd.DataFrame(data)
-    for index, row in df4.iterrows():
+
+    for row in df.itertuples(index=False):
         server = row[0]
         model_num = row[3]
         location = row[4]
@@ -200,17 +191,23 @@ def siphon(current_model):
         gaming_breakdown.write(
             f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
 
-
 def chart_gen():
     csv_two = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
     model_data = csv_two['Model']
     count_data = csv_two['Count']
-
+    with open(number_path, 'r') as csvfile:
+        reader = csv.reader(csvfile, delimiter=':')
+        model_data = []
+        count_data = []
+        for row in reader:
+            county = str(row[0])
+            county_2 = float(row[1])
+            county_3 = int(county_2)
+            model_data.append(county)
+            count_data.append(county_3)
     # pie chart to show what percentage of the total devices each model is
     for i in count_data:
         model_percentage = (i / sum(count_data) * 100)
-        print(round(model_percentage), 2)
-
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, subplot_kw={'aspect': 'equal'}, figsize=(7, 7))
     ax1.pie(balun_data, autopct='%1.1f%%', textprops={'fontsize': 8}, colors=['red', 'blue'], shadow=True)
     ax1.legend(['With Balun', 'Without Balun'], loc='right', bbox_to_anchor=(2.0, 0.5))
@@ -227,11 +224,11 @@ def chart_gen():
     ax3.title.set_size(12)
     plt.savefig(path + 'pie_charts.png')
 
-    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#8c564b", "#191970", "#F0F8FF", "#00FFFF", "#8A2BE2",
+    colors = ("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#8c564b", "#191970", "#F0F8FF", "#00FFFF", "#8A2BE2",
               "#5F9EA0",
               "#7FFF00", "#DC143C", "#006400", "#008B8B", "#B8860B", "#556B2F", "#BDB76B", "#ADFF2F", "#CD5C5C",
               "#E3CF57", "#8B2323",
-              "#76EE00", "#CD2626", "#8B5742", "#FF34B3", "#FF8000", "#8B0000", "#71C671"]
+              "#76EE00", "#CD2626", "#8B5742", "#FF34B3", "#FF8000", "#8B0000", "#71C671")
 
     fig, ax = plt.subplots(figsize=(8, 8))
     plt.bar(model_data, count_data, color=colors, width=1.0)
@@ -245,7 +242,6 @@ def chart_gen():
 
     plt.show()
 
-
 def main():
     print("Scanning Site Health Report...")
     for current_model in tqdm(model_list, ascii=False, colour='green', desc='Scanning: ', miniters=1, unit='',
@@ -255,49 +251,118 @@ def main():
 
 def make_db():
     new_column_header = f'{formatted_date}'.format(
-        len(open(filename).readline().split(",")))  # get the number of existing columns and add 1 for the new column
+        len(open(filename).readline().split(",")))
     if os.path.exists(filename):
         with open(filename, "r") as csvfile:
             reader = csv.reader(csvfile)
-            headers = next(reader)  # get the existing headers
+            headers = next(reader)
 
-            if new_column_header not in headers:  # if the new column doesn't exist yet
-                headers.append(new_column_header)  # add it to the headers
-                rows = [row for row in reader]  # read the existing rows
-                # rows = [[row[i] if i < len(row) else count for i in range(len(headers))] for row in
-                #         rows]  # pad the existing rows with empty cells for the new column
+            if new_column_header not in headers:
+                headers.append(new_column_header)
+                rows = [row for row in reader]
                 rows = [[row[i] if i < len(row) else counts[j] for i in range(len(headers))] for j, row in
                         enumerate(rows)]
                 with open(filename, "w", newline="") as outfile:
                     writer = csv.writer(outfile)
                     writer.writerow(headers)
-                    writer.writerows(rows)  # write the updated rows
+                    writer.writerows(rows)
     else:
-        with open(filename, "w", newline="") as outfile:  # if the file doesn't exist yet, create it with the new column
+        with open(filename, "w", newline="") as outfile:
             writer = csv.writer(outfile)
             writer.writerow([new_column_header])
 
 
-def find_next_id(list):
-    lowest_num = min(list)
-    for i in range(lowest_num, len(list) + 1):
-        if i not in list:
-            print(i)
-            return i
-    return len(list) + 1
-
+# def find_next_id(list):
+#     lowest_num = min(list)
+#     for i in range(lowest_num, len(list) + 1):
+#         if i not in list:
+#             return i
+#     return len(list) + 1
 
 '''start new
 MATH FUNCTIONS'''
 filepath = 'C:\\data_pull_downloads\\device_totals.csv'
 
-df = pd.read_csv(filepath)
-subset_df = df.iloc[0:, 1:]
-num_rows = df.shape[0]
-num_cols = df.shape[1]
+df2 = pd.read_csv(filepath)
+subset_df = df2.iloc[0:, 1:]
+num_rows = df2.shape[0]
+num_cols = df2.shape[1]
 
 
 # equation functions
+# def row_sum(row):
+#     return row.sum()
+#
+#
+# def row_mean(row):
+#     return round(row.mean(), 1)
+#
+#
+# def row_median(row):
+#     return int(row.median())
+#
+#
+# def row_diff(row):
+#     return row.max() - row.min()
+#
+#
+# def row_std(row):
+#     return round(row.std(), 1)
+#
+#
+# def row_var(row):
+#     return round(row.var(), 1)
+#
+#
+# def row_range(row):
+#     return row.max() - row.min()
+#
+#
+# def row_coeff_var(row):
+#     mean = row.mean()
+#     std = row.std()
+#     if mean == 0:
+#         return 0
+#     else:
+#         return round((std / mean) * 100, 1)
+#
+#
+# # count total devices of each column
+# def column_sum(column):
+#     return int(sum(column))
+
+def analyze_dataframe(df):
+    """
+    Analyzes a pandas DataFrame and returns a summary of each row and column.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame to analyze.
+
+    Returns:
+        dict: A dictionary containing the summary of each row and column.
+    """
+    result = {}
+
+    # Analyze rows
+    for i, row in df.iterrows():
+        row_result = {}
+        row_result['sum'] = row_sum(row)
+        row_result['mean'] = row_mean(row)
+        row_result['median'] = row_median(row)
+        row_result['diff'] = row_diff(row)
+        row_result['std'] = row_std(row)
+        row_result['var'] = row_var(row)
+        row_result['range'] = row_range(row)
+        row_result['coeff_var'] = row_coeff_var(row)
+        result[f'row_{i}'] = row_result
+
+    # Analyze columns
+    for column_name, column_data in df.iteritems():
+        result[column_name] = {'sum': column_sum(column_data)}
+
+    return result
+
+
 def row_sum(row):
     return row.sum()
 
@@ -311,6 +376,8 @@ def row_median(row):
 
 
 def row_diff(row):
+    if row.max() - row.min() > 5:
+        print(f'{row} has a large difference.')
     return row.max() - row.min()
 
 
@@ -338,7 +405,6 @@ def row_coeff_var(row):
 # count total devices of each column
 def column_sum(column):
     return int(sum(column))
-
 
 # Apply the row-level functions to each row of the DataFrame
 row_sums = subset_df.apply(row_sum, axis=1)
@@ -376,7 +442,6 @@ totals_df.to_csv('C:\\data_pull_downloads\\inv_analysis\\totals.csv', index=True
 # run main function
 main()
 make_db()
-find_next_id(logical_id_list)
 
 '''Below is collected data for further comparisons'''
 total_analog = str(analog_count[0])
@@ -391,9 +456,13 @@ total_ports = total_encoders * 4
 available_ports = total_ports - total_analog
 percentage_ports = round((total_analog / total_ports) * 100, 2)
 type_data = total_digital, total_analog
+# noinspection PyRedeclaration
 total_no_baluns = int(len(no_balun_list))
+# noinspection PyRedeclaration
 total_baluns = int(len(balun_list))
+# noinspection PyRedeclaration
 total_gaming_cams = len(set(gaming_cams))
+# noinspection PyRedeclaration
 total_boh = len(set(boh_cams))
 gaming_data = total_gaming_cams, total_boh
 balun_data = total_baluns, total_no_baluns
