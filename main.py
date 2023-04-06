@@ -14,7 +14,7 @@ formatted_date = now.strftime("%m-%d-%Y (%H:%M)")
 filename = parent_directory + "device_totals.csv"
 
 date = datetime.today().strftime('%m:%d:%Y')
-month_year = "FEB2023"
+month_year = "FEB2024"
 # month_year = input("What is the month and year for this inventory? (format: JAN2023)")
 path = os.path.join(parent_directory, month_year + '\\')
 if os.path.exists(path):
@@ -51,6 +51,7 @@ data = pd.read_csv(parent_directory + 'IslandView.csv', skiprows=198)
 df = pd.DataFrame(data)
 df.to_csv(path + 'df.csv')
 
+
 def siphon(current_model):
     id_list = []
     ip_list = []
@@ -58,9 +59,12 @@ def siphon(current_model):
     for row in df.itertuples(index=False):
         server = row[0]
         serial_num = row[12]
-        model_num = row[3]
         ip_add = str(row[8])
         logic_id = str(row[5])
+        model_num = row[3]
+        location = row[4]
+        log_id = str(row[5])
+        log_id = log_id.split(':')[-1].strip()
         # Regex
         ip_match = re.match(r'.*(.*[0-9]{3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})', ip_add)
         logicalID_match = re.match(r'.*Logical ID:(\d*)', logic_id)
@@ -97,8 +101,20 @@ def siphon(current_model):
                             balun_list.append(ip_str)
                         elif int(octets[3]) >= 200 and model_num != 'ENC-4P-H264' and ip_str not in no_balun_list:
                             no_balun_list.append(ip_str)
+                if location != "GAMING":
+                    if log_id not in boh_cams:
+                        boh_cams.append(log_id)
+                elif location == "GAMING" and model_num == "ENC-4P-H264":
+                    gaming_cams.append(log_id)
+
+                elif location == "GAMING":
+                    if log_id not in gaming_cams:
+                        gaming_cams.append(log_id)
+                    else:
+                        continue
                 else:
-                    continue
+                    if log_id not in boh_cams:
+                        boh_cams.append(log_id)
 
     # find amount of ID's in list
     count = len(set(id_list))
@@ -145,31 +161,6 @@ def siphon(current_model):
         for item in no_balun_list:
             no_baluns.writelines(f"{item}\n")
 
-    for row in df.itertuples(index=False):
-        server = row[0]
-        model_num = row[3]
-        location = row[4]
-        log_id = str(row[5])
-        log_id = log_id.split(':')[-1].strip()
-        if server == "IslandView13":
-            continue
-
-        # if location matches gaming check if that serial number is in gaming_cams list
-        if location != "GAMING":
-            if log_id not in boh_cams:
-                boh_cams.append(log_id)
-        elif location == "GAMING" and model_num == "ENC-4P-H264":
-            gaming_cams.append(log_id)
-
-        elif location == "GAMING":
-            if log_id not in gaming_cams:
-                gaming_cams.append(log_id)
-            else:
-                continue
-        else:
-            if log_id not in boh_cams:
-                boh_cams.append(log_id)
-
     with open(path + 'gaming_cam_list.csv', "w") as gaming_list:
         for item in gaming_cams:
             gaming_list.writelines(f"{item}\n")
@@ -181,6 +172,7 @@ def siphon(current_model):
     with open(path + "gaming_cam_totals.txt", "a") as gaming_breakdown:
         gaming_breakdown.write(
             f"\nDATE: {date}\n________________\nTOTAL GAMING CAMERAS : {total_gaming_cams}\nTOTAL BOH CAMERAS : {total_boh}")
+
 
 def chart_gen():
     csv_two = pd.read_csv(number_path, delimiter=':', header=None, names=['Model', 'Count'])
@@ -215,11 +207,11 @@ def chart_gen():
     ax3.title.set_size(12)
     plt.savefig(path + 'pie_charts.png')
 
-    colors = ("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#8c564b", "#191970", "#F0F8FF", "#00FFFF", "#8A2BE2",
-              "#5F9EA0",
-              "#7FFF00", "#DC143C", "#006400", "#008B8B", "#B8860B", "#556B2F", "#BDB76B", "#ADFF2F", "#CD5C5C",
-              "#E3CF57", "#8B2323",
-              "#76EE00", "#CD2626", "#8B5742", "#FF34B3", "#FF8000", "#8B0000", "#71C671")
+    colors = ("#7C83FD", "#7F37AF", "#D14E9F", "#1B8C92", "#D0E37F", "#A81D22", "#7FBA4A", "#FF7E00", "#9933FA",
+              "#D2691E", "#FFC0CB", "#A7FC00", "#F62217", "#87AFC7", "#2B60DE", "#6495ED", "#00FF00", "#9400D3",
+              "#6A5ACD", "#AF7817", "#F5F5DC", "#8B2323", "#DEB887", "#E6E6FA", "#D8BFD8", "#CD853F", "#FFD700",
+              "#008B8B", "#BC8F8F", "#FF6347", "#E9967A", "#40E0D0", "#F5DEB3", "#DA70D6", "#EEE8AA", "#4169E1",
+              "#FF69B4", "#8B5742", "#87CEEB", "#7FFF00")
 
     fig, ax = plt.subplots(figsize=(8, 8))
     plt.bar(model_data, count_data, color=colors, width=1.0)
@@ -232,6 +224,7 @@ def chart_gen():
     plt.savefig(path + 'bar_chart.png')
 
     plt.show()
+
 
 def main():
     print("Scanning Site Health Report...")
@@ -262,12 +255,14 @@ def make_db():
             writer = csv.writer(outfile)
             writer.writerow([new_column_header])
 
+
 filepath = 'C:\\data_pull_downloads\\device_totals.csv'
 
 df2 = pd.read_csv(filepath)
 subset_df = df2.iloc[0:, 1:]
 num_rows = df2.shape[0]
 num_cols = df2.shape[1]
+
 
 def analyze_dataframe(df):
     result = {}
@@ -327,6 +322,7 @@ def row_coeff_var(row):
 # count total devices of each column
 def column_sum(column):
     return int(sum(column))
+
 
 # Apply the row-level functions to each row of the DataFrame
 row_sums = subset_df.apply(row_sum, axis=1)
@@ -399,3 +395,4 @@ with open(path + 'numbers_x', 'a') as num_x:
         f'Total Cameras Not Utilizing Baluns: {total_no_baluns}\n')
 
 chart_gen()
+
